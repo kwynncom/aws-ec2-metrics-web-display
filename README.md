@@ -4,6 +4,11 @@ Get and display via web Amazon Web Services EC2 metrics (cpu, network bytes out)
 See detailed readmes in the doc folder.
 
 ****
+Update: same day as below, 9:52pm
+
+I'm already cleaning up some of my false starts with the new but failed async attempt.
+
+*****
 Update: 2020/06/21 9:31pm EDT / GMT -4 / America/New_York.  
 
 I'm going to save this version.  That's part of what GitHub is for.  This is what is live now, but my process control stuff is turned off for now.  That is, 

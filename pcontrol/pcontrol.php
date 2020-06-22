@@ -1,6 +1,5 @@
 <?php
 
-require_once('fifo.php');
 require_once(__DIR__ . '/../utils/dao.php');
 require_once(__DIR__ . '/../utils/testMode.php');
 
@@ -29,12 +28,13 @@ public function getSeq($dao, $seqFifo = false) {
     
     $glres = false;
     if (self::isJSReq()) $glres = $this->getLatest();
+    if ($glres) return $glres;
     
     return;
-    
-    if ($glres) return $glres;
+   
+
     $sres = false;
-    if ((PHP_SAPI !== 'cli' && !self::isJSReq()) || $this->testMode) $sres = $this->launchGet(); // Kwynn 2020/06/20
+    if ((PHP_SAPI !== 'cli' && !self::isJSReq())) $sres = $this->launchGet();
     if ($sres) return $sres;
     $this->doGet();
     return false;    
