@@ -16,7 +16,7 @@ $htt = <<<HT1
 <title>AWS EC2 CPU credit balance</title>
 <script src='pcontrol/pcontrol.js'></script>
 <script>
-    new kwAWSCPU_latest($seq);
+    // new kwAWSCPU_latest();
 </script>
 	
  <style>

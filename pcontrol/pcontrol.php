@@ -8,7 +8,8 @@ class aws_cpu_pcontrol {
 
 const timeout = 30;
 const cleanup = 300;
-const usleep  = 100 * 1000;
+const usleep  = 300 * 1000;
+const tryTimes = 50;
 
 public function __construct($dao = false, $tm = false) { 
     
@@ -17,7 +18,7 @@ public function __construct($dao = false, $tm = false) {
     if (!$dao) $dao = new aws_metrics_dao();
     $this->testMode = isTest('exe');
     
-    if (isTest('exe')) $this->timeout = 5;
+    if (isTest('exe')) $this->timeout = 3;
     else	       $this->timeout = self::timeout;
     $this->dao = $dao; 
     
@@ -38,8 +39,9 @@ public function getSeq($dao, $seqFifo = false) {
 
 private static function isJSReq() {
     if (   isset(     $_REQUEST['getLatestOutput']) 
-	&& isset(     $_REQUEST['seq'])
-	&& is_numeric($_REQUEST['seq'])
+	/* && isset(     $_REQUEST['seq'])
+	&& is_numeric($_REQUEST['seq']
+		)  */
     ) return true;
 
     return false;
@@ -47,19 +49,22 @@ private static function isJSReq() {
 
 private function getLatest() {
 
-    $seq = intval(     $_REQUEST['seq']);
+    // $seq = intval(     $_REQUEST['seq']);
     
     $i = 0;
 
     do {
-	$pido = $this->dao->getPC($seq);
+	$pido = $this->dao->getPC(/* $seq */);
 	if ($pido) break;
 	usleep(self::usleep);
-    } while($i++ < 20);
+    } while($i++ < self::tryTimes);
     
     $pid = $pido['pid_status'];
     
-    if ($pid === true) return ['ts' => $pido['pc_start_ts']];
+    if ($pid === true) {
+	$this->dao->putPCSent($pido['pid']);
+	return ['ts' => $pido['pc_start_ts']];
+    }
     
     if (!$pid || !is_numeric($pid)) {
 	
@@ -68,6 +73,8 @@ private function getLatest() {
     }
     
     exec("tail --pid=$pid -f /dev/null");
+        
+    $this->dao->putPCSent($pid);
     
     return ['ts' => $pido['pc_start_ts']];
 }

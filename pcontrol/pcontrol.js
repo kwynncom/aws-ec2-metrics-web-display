@@ -1,3 +1,7 @@
+window.onload = function() {
+    new kwAWSCPU_latest();
+    }
+
 function byid(id) { return document.getElementById(id); }
 
 class kwAWSCPU_latest {
@@ -9,8 +13,8 @@ class kwAWSCPU_latest {
 	const self = this;
         const prld = new Promise(function(resolve) { self.resolveLD = resolve; });
 	const praj = new Promise(function(resolve) { self.resolveAJ = resolve; });
-	Promise.all([praj, this.prld]).then(function() { self.dispajr(); });		
-	window.onload = this.resolveLD;
+	Promise.all([praj /*, this.prld*/]).then(function() { self.dispajr(); });		
+	// window.onload = this.resolveLD;
 	
 	this.getLatest();
     }
@@ -41,9 +45,9 @@ class kwAWSCPU_latest {
     
     getLatest() {
 	
-	if (!this.seq) return;
-	const seq1 = parseInt(this.seq);
-	if (isNaN(seq1) || seq1 <= 0) return;
+	// if (!this.seq) return;
+	// const seq1 = parseInt(this.seq);
+	// if (isNaN(seq1) || seq1 <= 0) return;
 		
 	const xhr = new XMLHttpRequest();
 	
@@ -54,7 +58,9 @@ class kwAWSCPU_latest {
 	    self.resolveAJ();
 	}// 
 	
-	xhr.open('GET', 'index.php?getLatestOutput=1&seq=' + this.seq + '&XDEBUG_SESSION_START=netbeans-xdebug', true);
+	// const q = 'index.php?getLatestOutput=1&seq=' + this.seq + '&XDEBUG_SESSION_START=netbeans-xdebug';
+	const q = 'index.php?getLatestOutput=1&XDEBUG_SESSION_START=netbeans-xdebug';
+	xhr.open('GET', q, true);
 	xhr.send();
     }
     

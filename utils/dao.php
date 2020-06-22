@@ -97,11 +97,15 @@ class aws_metrics_dao extends dao_generic {
 		
     }
     
-    public function getPC($seq) {
-	$res = $this->pcoll->findOne(['seq' => $seq]);
+    public function getPC(/*$seq*/) {
+	$res = $this->pcoll->findOne(['sent' => ['$exists' => false], 'pid' => ['$exists' => true], 'pc_start_ts' => ['$exists' => true]], ['sort' => ['pc_start_ts' => -1]]);
 	if (isset( $res['pid_status']))
 	    return $res;
 	return false;
+    }
+    
+    public function putPCSent($pid) {
+	$this->pcoll->upsert(['pid' => $pid], ['sent' => true]);
     }
     
 }
