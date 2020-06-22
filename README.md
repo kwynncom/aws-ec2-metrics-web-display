@@ -1,6 +1,8 @@
 # aws-ec2-metrics-web-display
 Get and display via web Amazon Web Services EC2 metrics (cpu, network bytes out)
 
+Running at https://kwynn.com/t/9/10/cpu/
+
 See detailed readmes in the doc folder.
 
 *****
