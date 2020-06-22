@@ -5,7 +5,11 @@ require_once('get/get.php');
 require_once('output/output.php');
 require_once('pcontrol/pcontrol.php');
 
-$dao  = new aws_metrics_dao();
-$seqo = new aws_cpu_pcontrol($dao);
-$pci  = $seqo->getSeq();
-awsMOutput($dao, $pci);
+function index_f($seqFifo = false) {
+    $dao  = new aws_metrics_dao();
+    $seqo = new aws_cpu_pcontrol($dao);
+    $pci  = $seqo->getSeq($dao, $seqFifo);
+    awsMOutput($dao, $pci);
+}
+
+if (PHP_SAPI !== 'cli') index_f();

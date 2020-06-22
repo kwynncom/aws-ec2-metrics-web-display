@@ -1,6 +1,6 @@
 <?php
 
-require_once('kwutils.php');
+require_once('/opt/kwynn/kwutils.php');
 
 if (PHP_SAPI === 'cli' && time() < strtotime('2019-11-28')) {
     getMonthBounds();

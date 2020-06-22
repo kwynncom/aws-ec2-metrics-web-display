@@ -10,7 +10,7 @@ class kwAWSCPU_latest {
         const prld = new Promise(function(resolve) { self.resolveLD = resolve; });
 	const praj = new Promise(function(resolve) { self.resolveAJ = resolve; });
 	Promise.all([praj, this.prld]).then(function() { self.dispajr(); });		
-	window.onload = this.resolveLD;
+	// window.onload = this.resolveLD; // turning feature off for now, Kwynn, 2020/06/21
 	
 	this.getLatest();
     }
@@ -54,7 +54,7 @@ class kwAWSCPU_latest {
 	    self.resolveAJ();
 	}// 
 	
-	xhr.open('GET', '/../index.php?getLatestOutput=1&seq=' + this.seq + '&XDEBUG_SESSION_START=netbeans-xdebug', true);
+	xhr.open('GET', 'index.php?getLatestOutput=1&seq=' + this.seq + '&XDEBUG_SESSION_START=netbeans-xdebug', true);
 	xhr.send();
     }
     

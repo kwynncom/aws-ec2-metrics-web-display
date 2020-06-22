@@ -52,7 +52,7 @@ function getHTFromRes($rows, $amf = false, $dao = false, $isAjax) { // $amf - "a
     
     foreach($rows as $r) {
 	
-	if ($r['status'] !== 'OK') continue;
+	// if ($r['status'] !== 'OK') continue; // made moot Kwynn 2020/06/20
 
 	$rres = outCalcs($r, $i); extract($rres);
 	
@@ -75,6 +75,9 @@ function getHTFromRes($rows, $amf = false, $dao = false, $isAjax) { // $amf - "a
     if (!$isAjax) $ht .= '</tbody>';
     
     if ($dao) {
+	
+	if (!isset($latestTS)) $latestTS = time() - 300; // Kwynn 2020/06/20
+	
 	$topht = topOutput($latestCPU, $latestNet, $dao, $latestTS);
 	return ['top' => $topht, 'fht' => $ht];
     }

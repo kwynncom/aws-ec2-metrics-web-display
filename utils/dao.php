@@ -1,7 +1,7 @@
 <?php
 
-require_once('utils/kwutils.php');
-require_once('utils/utils.php');
+require_once('/opt/kwynn/kwutils.php');
+require_once('utils.php');
 
 class aws_metrics_dao extends dao_generic {
     const dbName = 'aws_cpu';
@@ -28,7 +28,9 @@ class aws_metrics_dao extends dao_generic {
 	
 	if (!$sin) $since = time() - 86400 * self::defaultDays;
 	else       $since = $sin;
-	return  $this->mcoll->find(['end_exec_ts' => ['$gte' => $since]], ['sort' => ['begin_ts' => -1]])->toArray();  
+	
+	// Kwynn 2020/06/20 added status
+	return  $this->mcoll->find(['end_exec_ts' => ['$gte' => $since], 'status' => 'OK'], ['sort' => ['begin_ts' => -1]])->toArray();  
 	
     }
     

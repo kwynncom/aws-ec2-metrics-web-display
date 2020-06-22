@@ -1,12 +1,22 @@
-<?php // Kwynn Buess, 2020/01/16 9:40pm
+<?php // Kwynn Buess 2020/02/17 7:41pm EST, America/New_York
+// updated user agent in kwua()
+
+
 /* This is a collection of code that is general enough that I use it in a number of projects. */
+
+/* DATABASE USAGE EXAMPLE - the database stuff currently begins on line 36
+ * 
+  class radar_dao extends dao_generic {
+    const db = 'radar';
+	function __construct() {
+	    parent::__construct(self::db);
+	    $this->icoll    = $this->client->selectCollection(self::db, 'img');
+      }
+  } */
 
 /* user agent, for when a server will ignore a request without a UA.  I am changing this 2020/01/16.  I'm moving towards releasing this file
  * to GitHub, so I should show myself to be properly open source fanatical. */
-function kwua() { 
-    return 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:71.0) Gecko/20100101 Firefox/71.0';
-    // return 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.157 Safari/537.36'; 
-}
+function kwua() { return 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36'; }
 
 /* The major purpose of this (below) is to make warnings and notices an error.  I have found it's best to "die" on warnings and uncaught exceptions. */
 function kw_error_handler($errno, $errstr, $errfile, $errline) {
@@ -152,9 +162,9 @@ function isKwDev() {
    return file_exists($path . $name);
 }
 
-function sslOnly() { // make sure the page is SSL
+function sslOnly($force = 0) { // make sure the page is SSL
     
-    if (isKwDev()) return; // but don't force it if it's my machine and I don't have SSL set up.
+    if (isKwDev() && !$force) return; // but don't force it if it's my machine and I don't have SSL set up.
 
     if (!isset($_SERVER['HTTPS']) || $_SERVER['HTTPS'] !== 'on') {
 	header('Location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
@@ -162,9 +172,9 @@ function sslOnly() { // make sure the page is SSL
     }
 }
 
-function startSSLSession() { // session as in a type of cookie
+function startSSLSession($force = 0) { // session as in a type of cookie
     if (session_id()) return;
-    sslOnly();
+    sslOnly($force);
     session_set_cookie_params(163456789); // over 5 years expiration
     session_start();
     $sid = session_id();
@@ -196,3 +206,12 @@ function isKwDev() {
     // <VirtualHost *:80 sntp>
     // SetEnv KWYNN_201704_LOCAL yes
 } */
+
+/* HISTORY
+ * 2020/02/15 8:06pm EST, America/New_York
+// added usage example on how to use database stuff
+ * 
+ * 2020/01/30 10:59pm
+// latest change is to allow a "force" on sslOnly and start session
+ * 
+ */

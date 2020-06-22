@@ -1,6 +1,6 @@
 <?php  
 
-require_once('kwutils.php');
+require_once('/opt/kwynn/kwutils.php');
 require_once('machineInfo.php');
 
 if (PHP_SAPI === 'cli' && $argc > 1 && $argv[1] === 'test') {

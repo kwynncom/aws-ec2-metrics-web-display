@@ -1,6 +1,6 @@
 <?php
 
-require_once(__DIR__ . '/../utils/kwutils.php');
+require_once('/opt/kwynn/kwutils.php');
 require_once(__DIR__ . '/../utils/utils.php');
 require_once(__DIR__ . '/../utils/getawsacctid.php');
 require_once(__DIR__ . '/../utils/dao.php');
@@ -60,6 +60,8 @@ private static function doCmds1($days, $dao) { // called from below; $days of da
     $rarr['interval_days'] = getDaysDBVal($days); unset($days);
     $rarr['exec_n'] = php_uname('n');
     $rarr['cmd_seq']  = $dao->getSeq('awscmdset');
+    $rarr['pctrl_seq'] = aws_cpu_pcontrol::getSeqArg();
+    $rarr['pid'] = getmypid();
     $rarr['status'] = 'pre-Fetch';
     $dao->put($rarr);
 
@@ -130,4 +132,4 @@ public static function awsMRegGet($dao = false, $daysin = false) {
 
 // allows you to run a simplified get from the command line, if you call this file directly
 // usage:    php get.php 2019-12-01 2019-12-31 2700000 net
-if (PHP_SAPI === 'cli' && pathinfo(__FILE__, PATHINFO_FILENAME) === pathinfo($argv[0], PATHINFO_FILENAME)) doCLIDirect();
+if (PHP_SAPI === 'cli' && isset($argv[0]) && pathinfo(__FILE__, PATHINFO_FILENAME) === pathinfo($argv[0], PATHINFO_FILENAME)) doCLIDirect();

@@ -1,6 +1,6 @@
 <?php
 
-require_once('kwutils.php');
+require_once('/opt/kwynn/kwutils.php');
 require_once('dao.php');
 require_once('getawsacctid.php');
 
@@ -8,6 +8,7 @@ function getConfig($dao = false) {
     
     if (!$dao) $dao = new aws_metrics_dao();
     $c = $dao->getConfig(getCredsName()); extract($c);
+    kwas($c && is_array($c), 'cannot find AWS creds');
     
     $r = preg_match_all('/([^\s]+)\s+=\s+([^\s]+)/', $c['creds'], $m); kwas(isset($m[2][1]), 'creds preg fail CPUBal');
     for($i=0; $i <= 1; $i++) {
@@ -34,6 +35,7 @@ function getConfig($dao = false) {
     
 }
 function getHostInfo() {
+    if (isAWS()) return 'AWS-EC2';
     if (getenv('KWYNN_ID_201701'   ) === 'aws-nano-1') return 'AWS-EC2';
     if (getenv('KWYNN_201704_LOCAL') === 'yes')        return 'Kwynn-local';
 }
@@ -41,6 +43,8 @@ function getHostInfo() {
 function getCredsName() {
     
     $kwcr1 = 'aws_cpu_creds_1_2019_10';
+    
+    return $kwcr1;
     
     if (getHostInfo() === 'AWS-EC2'    ) return $kwcr1;
     if (getHostInfo() === 'Kwynn-local') return $kwcr1;
