@@ -8,8 +8,10 @@ class aws_cpu_pcontrol {
 
 const timeout = 30;
 const cleanup = 300;
-const usleep  = 300 * 1000;
-const tryTimes = 50;
+
+// usleep * tryTimes is time to wait for the async process to START, not finish
+const usleep  = 100 * 1000; 
+const tryTimes = 20;
 
 public function __construct($dao = false, $tm = false) { 
     
@@ -58,6 +60,12 @@ private function getLatest() {
 	if ($pido) break;
 	usleep(self::usleep);
     } while($i++ < self::tryTimes);
+    
+    if (!$pido || !isset($pido['pid_status'])) {
+	echo('Async process not attempted.  Probably too many requests.');
+	exit(0);
+	
+    }
     
     $pid = $pido['pid_status'];
     
