@@ -3,6 +3,10 @@ Get and display via web Amazon Web Services EC2 metrics (cpu, network bytes out)
 
 See detailed readmes in the doc folder.
 
+*****
+Update: same day, 11:36pm - I think it works now.
+
+
 ****
 Update: same day as below, 9:52pm
 

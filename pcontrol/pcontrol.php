@@ -2,6 +2,7 @@
 
 require_once(__DIR__ . '/../utils/dao.php');
 require_once(__DIR__ . '/../utils/testMode.php');
+require_once(__DIR__ . '/../get/get.php');
 
 class aws_cpu_pcontrol {
 
@@ -11,32 +12,27 @@ const usleep  = 100 * 1000;
 
 public function __construct($dao = false, $tm = false) { 
     
+    kwl('constructor');
+    
     if (!$dao) $dao = new aws_metrics_dao();
-    $this->testMode = false;
-    if ($tm) $this->testMode = true;
+    $this->testMode = isTest('exe');
     
     if (isTest('exe')) $this->timeout = 5;
     else	       $this->timeout = self::timeout;
     $this->dao = $dao; 
+    
+    kwl('end constructor');
 }
 
 public function getSeq($dao, $seqFifo = false) {
     
-    aws_cpu::awsMRegGet($dao);
-    
-    // if ($seqFifo) { $this->doGet($seqFifo); return; }
-    
     $glres = false;
     if (self::isJSReq()) $glres = $this->getLatest();
     if ($glres) return $glres;
-    
-    return;
-   
 
     $sres = false;
-    if ((PHP_SAPI !== 'cli' && !self::isJSReq())) $sres = $this->launchGet();
+    if ((PHP_SAPI !== 'cli' && !self::isJSReq()) || $this->testMode) $sres = $this->launchGet();
     if ($sres) return $sres;
-    $this->doGet();
     return false;    
 }
 
@@ -45,11 +41,9 @@ private static function isJSReq() {
 	&& isset(     $_REQUEST['seq'])
 	&& is_numeric($_REQUEST['seq'])
     ) return true;
-    
-    return false;
-    
-}
 
+    return false;
+}
 
 private function getLatest() {
 
@@ -84,9 +78,14 @@ private function launchGet() {
     
     $seq = $this->dao->insertPC();
     
-    // if (1) aws_pc_fifo::write('exedoitInternalPCntrl', $seq);
-    // else   exec('php -q ' . __DIR__ . '/../index.php ' . $seq .  ' > /dev/null & ');
+    self::callAsync($seq);
+    
     return ['seq' => $seq];
+}
+
+public static function callAsync($seq) {
+    exec('php ' . __DIR__ . '/' . 'async.php ' . $seq .  ' > /dev/null & ', $output, $retvar);   
+    return;
 }
 
 public static function getSeqArg() {
@@ -101,19 +100,22 @@ public static function getSeqArg() {
     
 }
 
-private function doGet($seqFifo = false) {
+public function doGet($seqFifo = false) {
+    
+    kwl('doGet 1');
     
     if ($seqFifo && is_numeric($seqFifo)) $seq = intval($seqFifo);
     else    $seq = self::getSeqArg();
     
     kwas($seq, 'no seq to doGet()');
+
+    kwl('doGet 2');
     
     $dao = $this->dao;
     $dao->pidPC($seq, getmypid());
     $dao->clearPC(self::cleanup);
     aws_cpu::awsMRegGet($dao);
     $dao->donePC($seq);
-    exit(0);
 }
 
 private function r($sin) {

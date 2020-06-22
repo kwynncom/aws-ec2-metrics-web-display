@@ -12,4 +12,4 @@ function index_f($seqFifo = false) {
     awsMOutput($dao, $pci);
 }
 
-if (PHP_SAPI !== 'cli') index_f();
+index_f();

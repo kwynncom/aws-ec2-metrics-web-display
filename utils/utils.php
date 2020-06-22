@@ -119,3 +119,12 @@ function doCLIDirect() {
    echo $res . "\n";    
 }
 
+function kwl($din) {
+    
+    return; // don't need it.
+    
+    if (!$din) $flag = 0;
+    else       $flag = FILE_APPEND;
+    file_put_contents('/tmp/ast', $din . "\n", FILE_APPEND);  
+    
+}

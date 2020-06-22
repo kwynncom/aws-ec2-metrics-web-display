@@ -70,7 +70,9 @@ class aws_metrics_dao extends dao_generic {
     }
     
     public function insertPC() {
-	$dat['pc_start_ts']   = time();
+	$now = time();
+	$dat['pc_start_ts']   = $now;
+	$dat['r'] = date('r', $now);
 	$seq = $this->getSeq('aws-cpu-pcontrol');
 	$dat['seq'] = $seq;
 	$dat['status'] = 'init';

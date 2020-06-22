@@ -10,7 +10,7 @@ class kwAWSCPU_latest {
         const prld = new Promise(function(resolve) { self.resolveLD = resolve; });
 	const praj = new Promise(function(resolve) { self.resolveAJ = resolve; });
 	Promise.all([praj, this.prld]).then(function() { self.dispajr(); });		
-	// window.onload = this.resolveLD; // turning feature off for now, Kwynn, 2020/06/21
+	window.onload = this.resolveLD;
 	
 	this.getLatest();
     }
