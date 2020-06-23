@@ -7,6 +7,7 @@ require_once(__DIR__ . '/../utils/dao.php');
 require_once('parse.php');
 require_once(__DIR__ . '/../utils/machineInfo.php');
 require_once(__DIR__ . '/../utils/testMode.php');
+require_once(__DIR__ . '/../pcontrol/pcontrol.php');
 
 class aws_cpu {
     
@@ -108,11 +109,12 @@ public static function cliGet($beg = false, $end = false, $per = aws_cpu::minPer
     $cend = microtime(1); unset($cmd);
     $json = trim($rawres); unset($rawres);
     
-    if ($rarr) {
+    if ($rarr !== false) {
 	$arr  = json_decode($json, 1);  unset($json);
 	$parr  = parseAWSMetric($arr, $metric, $stat, $ctype); unset($arr);
 	$rarr  = array_merge($rarr, $parr); unset($parr);
 	$rarr[$ctype . '_exec_s'] = $cend - $cbeg; unset($cend, $cbeg);
+	return $rarr;
     } else return $json;
     
 }

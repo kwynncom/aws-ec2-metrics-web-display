@@ -5,6 +5,16 @@ Running at https://kwynn.com/t/9/10/cpu/
 
 See detailed readmes in the doc folder.
 
+******
+Update: 06/22 11:28pm (next day relative to below)
+
+*NOW* I am nearly certain that my async process FINALLY works consistently.
+
+Those "final" / working changes were made several hours and commits ago.  In this latest commit, I am fleshing out the function:
+get/get.php/public static function aws_cpu::cliGet
+
+I am about to add a new project to set alerts for Ubuntu updates needed, AWS metrics, disk space, etc.  I needed to change cliGet to make that easier.
+
 *****
 Update: same day, 11:36pm - I think it works now.
 
