@@ -19,21 +19,28 @@ class aws_cpu {
     const maxPer   = self::maxIDays * self::sind; // same in seconds
     const minPer   = 300; // minimum period as in if you run 1200 minutes end - start interval you'll run 4 periods === 1200 / 300
     const defaultDays = 30; // if never run before, run n days
-    const rerunAtCPU = 71.98;
+    const rerunAtCPU = 143.98; // Depenent upon certain types of instance.  Fix this eventually.  Magic number 72 71 143 144
     
     const minpts =  1530413163; // a check on time calculations - min possible timestamp - June 30, 2018 10:46:03 PM GMT-04:00
 
-private static function doCmds1($days, $dao) { // called from below; $days of data to get
+// Kwynn 2020/06/27 7:36pm My previous version may have managed infinite recursion.  I am now protecting this against such an event.  
+// Hopefully I will comment in the README(s)
+private static function doCmds1($daysin, $dao, $recursiveCall = false) { // called from below; $days of data to get
     
     static $ts = false;
     
     if (!$ts) $ts = time();
     
-    if ($days < self::minDays) $days = self::minDays;
+    if ($daysin <= self::minDays) $days = self::minDays;
+    else			 $days = $daysin;
     
     $secs = $days * self::sind;
     
-    if ($days <= self::minDays) { // run for the minimum interval
+    // near the bottom of the function I explain min versus "longer" a bit better
+    $dmdd = abs(self::minDays - $days); // my potential infinite recursion problem was relying on floating point comparison, so $dmdd gives me a 
+					// reliable floating point comparison
+    if (    $recursiveCall || $daysin <= 0 || ($days <= self::minDays) || ($daysin <= self::minDays) || ($dmdd < 0.00001)
+	    ) { // run for the minimum interval
 	$sub   = self::minInterval;
 	$per   = self::minPer;
     } else {
@@ -41,7 +48,7 @@ private static function doCmds1($days, $dao) { // called from below; $days of da
 	$sub = $secs;
 	if ($days > self::maxIDays) $per = intval(round(self::maxIDays * self::sind * (2/3)));
 	else			    $per = intval(round($secs * (2/3)));
-    } unset($secs);
+    } unset($secs, $dmdd);
     
     $per = getPeriodDiv60($per); // periods must be divisible by 60.  The func is in utils.php
 
@@ -71,7 +78,15 @@ private static function doCmds1($days, $dao) { // called from below; $days of da
     $rarr['status'] = 'OK'; // we haven't thrown an exception or we wouldn't be here
     $dao->put($rarr);
     
-    if (isset($didLonger) && $rarr['cpu'] < self::rerunAtCPU) self::doCmds1(0, $dao);
+    if ($recursiveCall) return;
+    if (!$daysin) return;
+    if (!isset($didLonger) || !$didLonger) return;
+    if ($rarr['cpu'] >= self::rerunAtCPU)  return;
+    
+    /* If this ran a long period of time and the CPU was a bit low, I want to know the current value, so I re-run this function for the shortest 
+     * amount of time.  This risks infinite recursion, but as of 2020/06/27, I think have I solved that.  */
+    
+    self::doCmds1(0, $dao, true);
   
 }
 
