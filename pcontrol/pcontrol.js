@@ -74,8 +74,11 @@ class kwAWSCPU_latest {
 	    ) return;
     
 	const pele = byid(id);
+	
+	const childNodes = template.content.childNodes;
+	const rchildren = Array.from(childNodes).reverse(); 
     
-	template.content.childNodes.forEach(function(child){
+	rchildren.forEach(function(child){
 	    pele.prepend(child);
 	});
 	const x = 2;
