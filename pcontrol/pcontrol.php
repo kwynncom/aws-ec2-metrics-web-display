@@ -91,7 +91,9 @@ private function launchGet() {
     $coo = $this->dao->countPC($this->timeout);
     if ($coo !== 0) return false;
     
-    $seq = $this->dao->insertPC();
+    try {
+	$seq = $this->dao->insertPC();
+    } catch (Exception $ex) { return false; }
     
     self::callAsync($seq);
     

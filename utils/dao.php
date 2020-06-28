@@ -13,6 +13,7 @@ class aws_metrics_dao extends dao_generic {
 	$this->mcoll = $this->client->selectCollection(self::dbName, 'metrics');
 	$this->ocoll = $this->client->selectCollection(self::dbName, 'config');
 	$this->pcoll = $this->client->selectCollection(self::dbName, 'pcontrol');
+	$this->pmucoll = $this->client->selectCollection(self::dbName, 'pcmutex');
     }
     
     public function getSeq($name) { return parent::getSeq($name);  }
@@ -69,11 +70,33 @@ class aws_metrics_dao extends dao_generic {
 	return $reta;
     }
     
+    private function pcMutexInit() {
+	
+	$muc =  $this->pmucoll;
+	
+	$res = $muc->findOne(['type' => 'placeholder']);
+	if (!$res) {
+	    $muc->createIndex(['type' => -1], ['unique' => true ]);
+	    $muc->insertOne(['type' => 'placeholder']);
+	}
+    }
+    
+    private function pcunlock() {
+	$this->pmucoll->deleteOne(['type' => 'running']);		
+    }
+    
+    private function pclock() {
+	$this->pcMutexInit();
+	$this->pmucoll->insertOne(['type' => 'running']);
+    }
+    
     public function insertPC() {
+	
+	$this->pclock();
+	$seq = $this->getSeq('aws-cpu-pcontrol');
 	$now = time();
 	$dat['pc_start_ts']   = $now;
 	$dat['r'] = date('r', $now);
-	$seq = $this->getSeq('aws-cpu-pcontrol');
 	$dat['seq'] = $seq;
 	$dat['status'] = 'init';
 	$dat['pid_status'] = false;
@@ -94,9 +117,10 @@ class aws_metrics_dao extends dao_generic {
 	$dat['status'] = 'OK';
 	$dat['pid_status'] = true;
 	$this->pcoll->upsert(['seq' => $seq], $dat);
+	$this->pcunlock();
 		
     }
-    
+        
     public function getPC(/*$seq*/) {
 	$res = $this->pcoll->findOne(['sent' => ['$exists' => false], 'pid' => ['$exists' => true], 'pc_start_ts' => ['$exists' => true]], ['sort' => ['pc_start_ts' => -1]]);
 	if (isset( $res['pid_status']))
