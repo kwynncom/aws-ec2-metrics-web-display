@@ -1,5 +1,5 @@
 <?php
-
+die('archive only');
 require_once('/opt/kwynn/kwutils.php');
 require_once('utils.php');
 
@@ -12,8 +12,16 @@ class aws_metrics_dao extends dao_generic {
 	parent::__construct(self::dbName);
 	$this->mcoll = $this->client->selectCollection(self::dbName, 'metrics');
 	$this->ocoll = $this->client->selectCollection(self::dbName, 'config');
+	$this->pcoll = $this->client->selectCollection(self::dbName, 'pcontrol');
+	$this->pmucoll = $this->client->selectCollection(self::dbName, 'pcmutex');
+	$this->updatedb();
     }
     
+    private function updatedb() {
+	if (time() > strtotime('2020-07-06')) return;
+	$this->pcoll->drop();
+	$this->pmucoll->drop();
+    }
     
     public function getSeq($name) { return parent::getSeq($name);  }
     
@@ -68,6 +76,69 @@ class aws_metrics_dao extends dao_generic {
 	
 	return $reta;
     }
+    
+    private function pcMutexInit() {
+	
+	$muc =  $this->pmucoll;
+	
+	$res = $muc->findOne(['type' => 'placeholder']);
+	if (!$res) {
+	    $muc->createIndex(['type' => -1], ['unique' => true ]);
+	    $muc->insertOne(['type' => 'placeholder']);
+	}
+    }
+    
+    private function pcunlock() {
+	$this->pmucoll->deleteOne(['type' => 'running']);		
+    }
+    
+    private function pclock() {
+	$this->pcMutexInit();
+	$this->pmucoll->insertOne(['type' => 'running']);
+    }
+    
+    public function insertPC() {
+	
+	$this->pclock();
+	$seq = $this->getSeq('aws-cpu-pcontrol');
+	$now = time();
+	$dat['pc_start_ts']   = $now;
+	$dat['r'] = date('r', $now);
+	$dat['seq'] = $seq;
+	$dat['status'] = 'init';
+	$dat['pid_status'] = false;
+	$this->pcoll->insertOne($dat);
+	return $seq;
+    }
+    
+    public function countPC($within) { return $this->pcoll->count(     ['pc_start_ts' => ['$gte' => time() - $within]]);    }
+    public function clearPC($within) {        $this->pcoll->deleteMany(['pc_start_ts' => ['$lte' => time() - $within]]);    }
+    
+    public function pidPC($seq, $pid) {
+	$dat['pid'] = $dat['pid_status'] = $pid;
+	$dat['status'] = 'pid-set';
+	$this->pcoll->upsert(['seq' => $seq], $dat);
+    }
+    
+    public function donePC($seq) { 
+	$dat['status'] = 'OK';
+	$dat['pid_status'] = true;
+	$this->pcoll->upsert(['seq' => $seq], $dat);
+	$this->pcunlock();
+		
+    }
+        
+    public function getPC(/*$seq*/) {
+	$res = $this->pcoll->findOne(['sent' => ['$exists' => false], 'pid' => ['$exists' => true], 'pc_start_ts' => ['$exists' => true]], ['sort' => ['pc_start_ts' => -1]]);
+	if (isset( $res['pid_status']))
+	    return $res;
+	return false;
+    }
+    
+    public function putPCSent($pid) {
+	$this->pcoll->upsert(['pid' => $pid], ['sent' => true]);
+    }
+    
 }
 
 if (PHP_SAPI === 'cli' && time() < strtotime('2019-11-28')) {
