@@ -24,7 +24,9 @@ class kwAWSCPU_latest {
 	try {
 	    a = JSON.parse(this.resp);
 	} catch (err) { 
-	    return; // not worrying about this at the moment; just quit.
+	    const me = byid('msg');
+	    if (me) me.innerHTML = this.resp;
+	    return;
 	}
 	const self = this;
 	a.forEach(function(o) {
@@ -74,7 +76,6 @@ class kwAWSCPU_latest {
 	rchildren.forEach(function(child){
 	    pele.prepend(child);
 	});
-	const x = 2;
     }
     
 }

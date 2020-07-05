@@ -3,8 +3,6 @@
 require_once('template.php');
 require_once('filterOutput.php');
 
-
-
 function awsMOutput($dao, $pci) {
     
     if (isset(     $pci['ts'])) 
@@ -48,11 +46,9 @@ function getHTFromRes($rows, $amf = false, $dao = false, $isAjax) { // $amf - "a
     
     $i = 0;
     $latestCPU = -1;
-    $latestNet = -1;
+    $latestNet = false;
     
     foreach($rows as $r) {
-	
-	// if ($r['status'] !== 'OK') continue; // made moot Kwynn 2020/06/20
 
 	$rres = outCalcs($r, $i); extract($rres);
 	
@@ -104,7 +100,8 @@ function getDUJS($only = false) {
 function topOutput($cpu, $net, $dao, $asof) {
     $dsu = getDiskUsedPercentage('%');
     
-    $ht = '';
+    $ht  = '';
+    $ht .= '<div id="msg" />';
     $ht .= "<tr><td id='kwdu'>$dsu</td><td>du <span id='kwduasof'></span></td></tr>\n";
     
     $dt1 = date('g:ia', $asof);
@@ -115,8 +112,8 @@ function topOutput($cpu, $net, $dao, $asof) {
     
     $ht .= "<tr><td>$cpu</td><td>curr. CPU bal. (<a href='$scurl'>source code</a>)</td></tr>\n";
     
-    
-    $nd  = sprintf('%0.1f',  $net);
+    $nd = '-';
+    if (is_numeric($net)) $nd  = sprintf('%0.1f',  $net);
     $ht .= "<tr><td>$nd</td><td>latest network</td></tr>\n";
     
     $aa = $dao->getAgg();
@@ -143,8 +140,10 @@ function outCalcs($r, $i) { // $r row $i is row number
     $ets = $r['end_exec_ts'];
     $dts = $ets - $bts;
     
-    if (!isset( $r['netavg'])) $net = getCAWSAvg($r['net'], $dts);
-    else $net = $r['netavg'];
+    $net = false;
+    
+    if    ( !isset( $r['netavg']) && isset($r['net'])) $net = getCAWSAvg($r['net'], $dts);
+    else if (isset( $r['netavg'])) $net = $r['netavg'];
 
     $edates = date($df, $ets);
     $bdates = date($df, $bts); unset($df);

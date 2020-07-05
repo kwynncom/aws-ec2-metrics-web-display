@@ -1,6 +1,7 @@
 <?php
 
 function filterNetLogic($d) {
+    if (!isset($d['net'])) return false;
     $t = $d['end_exec_ts'] - $d['begin_ts'];
     $n = $d['net'];
     $bps = $n / $t;
@@ -24,8 +25,12 @@ function filterOutput($a) {
     
     while (isset($a[$i + 1])) {
 	
-	$cl = abs(    $a[$i  ]['cpu']
-		  -   $a[$i+1]['cpu']) < 0.002;
+	$cl = true;
+	
+	if (    isset($a[$i  ]['cpu']) 
+	    &&  isset($a[$i+1]['cpu']))
+	    $cl = abs(    $a[$i  ]['cpu']
+		      -   $a[$i+1]['cpu']) < 0.002;
 	
 	$nl = filterNetLogic($a[$i]);
 	
@@ -37,6 +42,7 @@ function filterOutput($a) {
 	else $same = false;
 		
 	if ((!$same || (($i + 2) === count($a))) && $bi !== false) { // create a combined row
+	    if (isset($a[$bi]['cpu']))
 	    $t['cpu']	      = $a[$bi]['cpu']; // I'm interested in the later cpu value; create a temp array
 	    $t['end_exec_ts'] = $a[$ei]['end_exec_ts'];
 	    $t['begin_ts'] = $a[$bi]['begin_ts'];
@@ -44,7 +50,8 @@ function filterOutput($a) {
     	    $nsum = 0; // network sum
 	    $ssum = 0; // time sum for average
 	    for($j=$bi; $j <= $ei; $j++) {
-		$nsum += $a[$j]['net'];
+		if (isset($a[$j]['net']))
+		$nsum +=  $a[$j]['net'];
 		$ssum +=  $a[$j]['end_exec_ts'] - $a[$j]['begin_ts'];
 	    }
 	    

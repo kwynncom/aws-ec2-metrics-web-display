@@ -23,14 +23,13 @@ class aws_cpu {
     
     const minpts =  1530413163; // a check on time calculations - min possible timestamp - June 30, 2018 10:46:03 PM GMT-04:00
 
-// Kwynn 2020/07/05 experimenting with making this public
-public static function doCmds1($daysin = 0, $dao = false, $recursiveCall = false) { // called from below; $days of data to get
+// Kwynn 2020/07/05 experimenting with making this method public - may or may not
+private static function doCmds1($daysin = 0, $dao = false, $recursiveCall = false, $cmds) { // called from below; $days of data to get
     
     static $ts = false;
     
     if (!$dao) $dao = new aws_metrics_dao();
-    
-    
+   
     if (!$ts) $ts = time();
     
     if ($daysin <= self::minDays) $days = self::minDays;
@@ -75,7 +74,7 @@ public static function doCmds1($daysin = 0, $dao = false, $recursiveCall = false
     $rarr['status'] = 'pre-Fetch';
     $dao->put($rarr);
 
-    self::doCmds2($rarr, $dao); // just below
+    self::doCmds2($rarr, $dao, $cmds); // just below
     
     $rarr['status'] = 'OK'; // we haven't thrown an exception or we wouldn't be here
     $dao->put($rarr);
@@ -92,11 +91,10 @@ public static function doCmds1($daysin = 0, $dao = false, $recursiveCall = false
   
 }
 
-private static function doCmds2(&$rarr, $dao) { // & means changes are carried back to the calling func
-  
-    $cmds[] = 'cpu';
-    $cmds[] = 'net';
-        
+private static function doCmds2(&$rarr, $dao, $cmdsin) { // & means changes are carried back to the calling func
+    
+    $cmds = self::getValidCmds($cmdsin);
+    
     foreach($cmds as $ctype) self::cliGet($rarr['begin_iso'], $rarr['end_iso'], $rarr['per_interval_s'], $ctype, $rarr, $dao);
 }
 
@@ -137,16 +135,32 @@ public static function cliGet($beg = false, $end = false, $per = aws_cpu::minPer
     
 }
 
-public static function awsMRegGet($dao = false, $daysin = false) {
+public static function awsMRegGet($dao = false, $daysin = false, $cmdsin = false) {
     
     if (!$dao) $dao = new aws_metrics_dao();
-
+   
     if (!$daysin) {
 	$prev = $dao->getLatest();
 	if (!$prev) $days = self::defaultDays;
 	else $days = (time() - $prev['end_exec_ts']) / self::sind;
     } else $days = $daysin;
-    if ($days > self::minPer / self::sind || isTest('alwaysCheck')) self::doCmds1($days, $dao);
+    if ($days > self::minPer / self::sind || isTest('alwaysCheck')) self::doCmds1($days, $dao, false, $cmdsin);
+}
+
+private static function getValidCmds($cin) {
+    $d[] = 'cpu';
+    $d[] = 'net';
+
+    if (!$cin) return $d;
+    if ($cin === 'both' || $cin === 'all') return $d;
+    if ($cin === 'cpu') return ['cpu'];
+    if ($cin === 'net') return ['net'];
+    if (!is_array($cin)) return $d;
+    if (count($cin) > 2) return $d;
+    
+    foreach($cin as $v) if (!in_array($v, $d)) return $d; 
+    
+    return $cin;
 }
 }
 
