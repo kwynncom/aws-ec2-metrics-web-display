@@ -111,7 +111,9 @@ function topOutput($cpu, $net, $dao, $asof) {
     $dt2 = date('s\s m/d' , $asof);
     $asofs = "<tr><td>$dt1</td><td>$dt2 as of </td></tr>\n";
     
-    $ht .= "<tr><td>$cpu</td><td>curr. CPU bal.</td></tr>\n";
+    $scurl = 'https://github.com/kwynncom/aws-ec2-metrics-web-display';
+    
+    $ht .= "<tr><td>$cpu</td><td>curr. CPU bal. (<a href='$scurl'>source code</a>)</td></tr>\n";
     
     
     $nd  = sprintf('%0.1f',  $net);

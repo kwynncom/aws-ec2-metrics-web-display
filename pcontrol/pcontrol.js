@@ -1,8 +1,6 @@
-window.onload = function() {
-    new kwAWSCPU_latest();
-    }
-
 function byid(id) { return document.getElementById(id); }
+
+// The class is called / invoked / instantiated at the bottom of this file.  
 
 class kwAWSCPU_latest {
     seq;
@@ -13,8 +11,8 @@ class kwAWSCPU_latest {
 	const self = this;
         const prld = new Promise(function(resolve) { self.resolveLD = resolve; });
 	const praj = new Promise(function(resolve) { self.resolveAJ = resolve; });
-	Promise.all([praj /*, this.prld*/]).then(function() { self.dispajr(); });		
-	// window.onload = this.resolveLD;
+	Promise.all([praj, this.prld]).then(function() { self.dispajr(); });		
+	window.onload = this.resolveLD;
 	
 	this.getLatest();
     }
@@ -44,10 +42,6 @@ class kwAWSCPU_latest {
     }
     
     getLatest() {
-	
-	// if (!this.seq) return;
-	// const seq1 = parseInt(this.seq);
-	// if (isNaN(seq1) || seq1 <= 0) return;
 		
 	const xhr = new XMLHttpRequest();
 	
@@ -56,9 +50,8 @@ class kwAWSCPU_latest {
 	    if (this.readyState !== 4 || this.status !== 200) return;
 	    self.resp = xhr.response;
 	    self.resolveAJ();
-	}// 
-	
-	// const q = 'index.php?getLatestOutput=1&seq=' + this.seq + '&XDEBUG_SESSION_START=netbeans-xdebug';
+	}
+
 	const q = 'index.php?getLatestOutput=1&XDEBUG_SESSION_START=netbeans-xdebug';
 	xhr.open('GET', q, true);
 	xhr.send();
@@ -86,4 +79,7 @@ class kwAWSCPU_latest {
     
 }
 
+new kwAWSCPU_latest();
+
 // Firefox and private class fields: https://bugzilla.mozilla.org/show_bug.cgi?id=1562054
+

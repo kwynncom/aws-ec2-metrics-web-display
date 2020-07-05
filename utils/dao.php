@@ -14,6 +14,13 @@ class aws_metrics_dao extends dao_generic {
 	$this->ocoll = $this->client->selectCollection(self::dbName, 'config');
 	$this->pcoll = $this->client->selectCollection(self::dbName, 'pcontrol');
 	$this->pmucoll = $this->client->selectCollection(self::dbName, 'pcmutex');
+	$this->updatedb();
+    }
+    
+    private function updatedb() {
+	if (time() > strtotime('2020-07-06')) return;
+	$this->pcoll->drop();
+	$this->pmucoll->drop();
     }
     
     public function getSeq($name) { return parent::getSeq($name);  }

@@ -23,11 +23,13 @@ class aws_cpu {
     
     const minpts =  1530413163; // a check on time calculations - min possible timestamp - June 30, 2018 10:46:03 PM GMT-04:00
 
-// Kwynn 2020/06/27 7:36pm My previous version may have managed infinite recursion.  I am now protecting this against such an event.  
-// Hopefully I will comment in the README(s)
-private static function doCmds1($daysin, $dao, $recursiveCall = false) { // called from below; $days of data to get
+// Kwynn 2020/07/05 experimenting with making this public
+public static function doCmds1($daysin = 0, $dao = false, $recursiveCall = false) { // called from below; $days of data to get
     
     static $ts = false;
+    
+    if (!$dao) $dao = new aws_metrics_dao();
+    
     
     if (!$ts) $ts = time();
     
@@ -68,7 +70,7 @@ private static function doCmds1($daysin, $dao, $recursiveCall = false) { // call
     $rarr['interval_days'] = getDaysDBVal($days); unset($days);
     $rarr['exec_n'] = php_uname('n');
     $rarr['cmd_seq']  = $dao->getSeq('awscmdset');
-    $rarr['pctrl_seq'] = aws_cpu_pcontrol::getSeqArg();
+    // $rarr['pctrl_seq'] = aws_cpu_pcontrol::getSeqArg();
     $rarr['pid'] = getmypid();
     $rarr['status'] = 'pre-Fetch';
     $dao->put($rarr);
@@ -92,7 +94,8 @@ private static function doCmds1($daysin, $dao, $recursiveCall = false) { // call
 
 private static function doCmds2(&$rarr, $dao) { // & means changes are carried back to the calling func
   
-    $cmds = ['cpu', 'net'];
+    $cmds[] = 'cpu';
+    $cmds[] = 'net';
         
     foreach($cmds as $ctype) self::cliGet($rarr['begin_iso'], $rarr['end_iso'], $rarr['per_interval_s'], $ctype, $rarr, $dao);
 }

@@ -8,7 +8,7 @@ require_once('pcontrol/pcontrol.php');
 function index_f($seqFifo = false) {
     $dao  = new aws_metrics_dao();
     $seqo = new aws_cpu_pcontrol($dao);
-    $pci  = $seqo->getSeq($dao, $seqFifo);
+    $pci  = $seqo->getSyncOrAsyncInfo($dao);
     awsMOutput($dao, $pci);
 }
 
