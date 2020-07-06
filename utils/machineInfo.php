@@ -53,6 +53,8 @@ function getCredsName() {
 
 function getInstanceInfo($dao) {
     
+    // curl http://169.254.169.254/latest/meta-data/instance-type   results in t3a.nano
+    
     if (getHostInfo() === 'AWS-EC2') {
 	$iid = trim(shell_exec(            '/usr/bin/wget -q -O - http://169.254.169.254/latest/meta-data/instance-id'));
 	$reg = rmSubRegion(trim(shell_exec('/usr/bin/wget -q -O - http://169.254.169.254/latest/meta-data/placement/availability-zone')));

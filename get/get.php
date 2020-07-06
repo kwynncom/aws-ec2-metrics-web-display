@@ -19,7 +19,7 @@ class aws_cpu {
     const maxPer   = self::maxIDays * self::sind; // same in seconds
     const minPer   = 300; // minimum period as in if you run 1200 minutes end - start interval you'll run 4 periods === 1200 / 300
     const defaultDays = 30; // if never run before, run n days
-    const rerunAtCPU = 143.98; // Depenent upon certain types of instance.  Fix this eventually.  Magic number 72 71 143 144
+    const rerunBelowCPU = 143.98; // Depenent upon certain types of instance.  Fix this eventually.  Magic number 72 71 143 144
     
     const minpts =  1530413163; // a check on time calculations - min possible timestamp - June 30, 2018 10:46:03 PM GMT-04:00
 
@@ -82,7 +82,11 @@ private static function doCmds1($daysin = 0, $dao = false, $recursiveCall = fals
     if ($recursiveCall) return;
     if (!$daysin) return;
     if (!isset($didLonger) || !$didLonger) return;
-    if ($rarr['cpu'] >= self::rerunAtCPU)  return;
+    
+    if (!isset($rarr['cpu'])  
+	  ||   $rarr['cpu'] >= self::rerunBelowCPU)  return;
+    
+    if ($cmds) return;
     
     /* If this ran a long period of time and the CPU was a bit low, I want to know the current value, so I re-run this function for the shortest 
      * amount of time.  This risks infinite recursion, but as of 2020/06/27, I think have I solved that.  */
@@ -135,9 +139,9 @@ public static function cliGet($beg = false, $end = false, $per = aws_cpu::minPer
     
 }
 
-public static function awsMRegGet($dao = false, $daysin = false, $cmdsin = false) {
+public static function awsMRegGet($daysin = false, $cmdsin = false) {
     
-    if (!$dao) $dao = new aws_metrics_dao();
+    $dao = new aws_metrics_dao();
    
     if (!$daysin) {
 	$prev = $dao->getLatest();

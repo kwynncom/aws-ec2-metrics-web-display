@@ -6,6 +6,11 @@ Running at https://kwynn.com/t/9/10/cpu/
 See detailed readmes in the doc folder, although as of 2020/07, those are older.  More recent updates below:
 
 *****
+same day, 7:45pm
+
+I'm removing the "arch" files because I am seeing "used" functions in NetBeans that are not in fact used.  
+
+
 Update: 2020/07/05 4:43pm EDT / GMT -4 / New York, Atlanta
 
 Looks like I'm going to disable all the async stuff and do something *much* simpler.  I'm glad to have experimented with the async stuff because 
