@@ -4,7 +4,6 @@ require_once('/opt/kwynn/kwutils.php');
 require_once('awsConfig.php');
 
 if (isAWS()) getIIInsideAWS();
-else getInstanceType();
 
 function getIIInsideAWS() {
 
@@ -22,7 +21,7 @@ function getIIInsideAWS() {
     if ($aiid !== $inid) simpleInstTyAndExitAndExit($it); unset($inid);
     
     $iid = $aiid; unset($aiid);
-    $instance_type = $it; unset($it);
+    $itype = $it; unset($it);
     
     unset($http_response_header);
     $vars = get_defined_vars();
@@ -37,18 +36,45 @@ function simpleInstTyAndExitAndExit($it) {
     exit(0);
 }
 
-function getInstanceType($url = KWYNN_GET_AWS_INSTANCE_TYPE_URL) {
+function getInstanceType($urlin = KWYNN_GET_AWS_INSTANCE_TYPE_URL, $iidin = false) {
     
 try {
     kwas(iscli() || time() < strtotime('2020-07-06 04:00'), 'cli only');
+    
+    $url = $urlin;
+    if ($iidin) $url .= '?iid=' . $iidin;
+    
     $key = 'default_socket_timeout';
     $dst = ini_get($key);
     ini_set($key, 4);
     $res = file_get_contents($url);
     ini_set($key, $dst);
     $len = strlen($res);
-    kwas(preg_match('/^[a-z0-9]{2,20}\.[a-z0-9]{1,20}$/', $res),'bad instance type format');
-    return $res;
+    
+    if ($iidin) {
+	$jarr = json_decode($res, 1);
+	kwas(isset($jarr['iid'])	  , 'iid cannot be confirmed - 1');
+	kwas(      $jarr['iid'] === $iidin, 'iid cannot be confirmed - 2');
+	kwas(isset($jarr['itype']),         'bad instance type - 0202');
+	$itype =   $jarr['itype'];
+    } else $itype = $res;
+     
+    kwas(isAWSInstanceTypeFormat($itype),'bad instance type format');
+    return $itype;
 } catch (Exception $ex) { return ''; }
     
 }
+
+function getintyclitest() {
+    global $argc;
+    global $argv;
+    
+    if (!isCLITest(__FILE__)) return;
+    if ($argc < 2) return;
+    
+    $res = getInstanceType(KWYNN_GET_AWS_INSTANCE_TYPE_URL, $argv[1]);
+    echo $res . "\n";
+    
+}
+
+getintyclitest();
