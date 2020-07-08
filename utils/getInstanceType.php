@@ -69,12 +69,11 @@ function getintyclitest() {
     global $argc;
     global $argv;
     
-    if (!isCLITest(__FILE__)) return;
-    if ($argc < 2) return;
+    if (!didCLICallMe(__FILE__)) return;
+    if ($argc < 2) die('error: the iid must be the first argument' . "\n");
     
     $res = getInstanceType(KWYNN_GET_AWS_INSTANCE_TYPE_URL, $argv[1]);
     echo $res . "\n";
-    
 }
 
 getintyclitest();
