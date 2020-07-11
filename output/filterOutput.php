@@ -1,13 +1,9 @@
 <?php
 
 function filterNetLogic($d) {
-    if (!isset($d['net'])) return false;
-    $t = $d['end_exec_ts'] - $d['begin_ts'];
-    $n = $d['net'];
-    $bps = $n / $t;
-    $gpm = $bps * aws_metrics_dao::aggF;
-    if ($gpm > 0.999) return true;
-    return false;
+    if (!isset($d['gpm'])) return false;
+    return     $d['gpm'];
+
 }
 
 function filterOutput($a) {

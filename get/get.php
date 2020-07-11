@@ -77,22 +77,36 @@ private static function doCmds1($daysin = 0, $dao = false, $recursiveCall = fals
     self::doCmds2($rarr, $dao, $cmds); // just below
     
     $rarr['status'] = 'OK'; // we haven't thrown an exception or we wouldn't be here
+    $gpm            = self::gpm($rarr);
+    if ($gpm !== false) $rarr['gpm'] = $gpm; unset($gpm); 
+    
     $dao->put($rarr);
     
-    if ($recursiveCall) return;
-    if (!$daysin) return;
-    if (!isset($didLonger) || !$didLonger) return;
+    if ($recursiveCall)  return $rarr;
+    if (!$daysin)	 return $rarr;
+    if (!isset($didLonger) || !$didLonger) return $rarr;
     
     if (!isset($rarr['cpu'])  
-	  ||   $rarr['cpu'] >= self::rerunBelowCPU)  return;
+	  ||   $rarr['cpu'] >= self::rerunBelowCPU)  return $rarr;
     
-    if ($cmds) return;
-    
+    if (!isset($cmds['cpu'])) return $rarr;
+     
     /* If this ran a long period of time and the CPU was a bit low, I want to know the current value, so I re-run this function for the shortest 
      * amount of time.  This risks infinite recursion, but as of 2020/06/27, I think have I solved that.  */
     
-    self::doCmds1(0, $dao, true);
+    self::doCmds1(0, $dao, true, $cmds);
+    
+    return $rarr;
   
+}
+
+private static function gpm($d) {
+    if (!isset($d['net'])) return false;
+    $t = $d['end_exec_ts'] - $d['begin_ts'];
+    $n = $d['net'];
+    $bps = $n / $t;
+    $gpm = $bps * aws_metrics_dao::aggF;
+    return $gpm;
 }
 
 private static function doCmds2(&$rarr, $dao, $cmdsin) { // & means changes are carried back to the calling func
@@ -139,16 +153,20 @@ public static function cliGet($beg = false, $end = false, $per = aws_cpu::minPer
     
 }
 
-public static function awsMRegGet($daysin = false, $cmdsin = false) {
+public static function awsMRegGet($daysin = false, $cmdsin = false, $overrideQ = false) {
     
     $dao = new aws_metrics_dao();
    
-    if (!$daysin) {
+    if ($daysin === false) {
 	$prev = $dao->getLatest();
 	if (!$prev) $days = self::defaultDays;
 	else $days = (time() - $prev['end_exec_ts']) / self::sind;
     } else $days = $daysin;
-    if ($days > self::minPer / self::sind || isTest('alwaysCheck')) self::doCmds1($days, $dao, false, $cmdsin);
+    
+    $doCheck = ($days > self::minPer / self::sind) || isTest('alwaysCheck') 
+	    || (iscli() && $overrideQ);
+    
+    if ($doCheck) return self::doCmds1($days, $dao, false, $cmdsin);
 }
 
 private static function getValidCmds($cin) {
