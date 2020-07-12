@@ -153,7 +153,7 @@ public static function cliGet($beg = false, $end = false, $per = aws_cpu::minPer
     
 }
 
-public static function awsMRegGet($daysin = false, $cmdsin = false, $overrideQ = false) {
+public static function awsMRegGet($daysin = false, $cmdsin = false, $overrideQ = false, $declutter = false) {
     
     $dao = new aws_metrics_dao();
    
@@ -166,8 +166,25 @@ public static function awsMRegGet($daysin = false, $cmdsin = false, $overrideQ =
     $doCheck = ($days > self::minPer / self::sind) || isTest('alwaysCheck') 
 	    || (iscli() && $overrideQ);
     
-    if ($doCheck) return self::doCmds1($days, $dao, false, $cmdsin);
+    if (!$doCheck) return false;
+    
+    $res = self::doCmds1($days, $dao, false, $cmdsin);
+    if ($declutter) return self::declutter($res);
+    else            return                 $res;
 }
+
+public static function declutter($din) {
+    static $fs = false;
+    if (!isset($din['status']) || $din['status'] !== 'OK') return false;
+    
+    if (!$fs) $fs = [ 'begin_iso',  'begin_ts', 'end_exec_ts', 'end_iso', 'gpm', 'cpu'];
+    
+    foreach($din as $k => $ignore) if (!in_array($k, $fs)) unset($din[$k]);
+    
+    return $din;
+}
+
+
 
 private static function getValidCmds($cin) {
     $d[] = 'cpu';
