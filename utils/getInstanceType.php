@@ -3,21 +3,22 @@
 require_once('/opt/kwynn/kwutils.php');
 require_once('awsConfig.php');
 
-awsInstanceType::get();
+awsInstanceType::get(0,0,1);
 
 class awsInstanceType {
       
-    public static function get($iidin = false, $regid = false) {
+    public static function get($iidin = false, $regid = false, $direct = false) {
 	$rout = self::getITypeOutsideAWS($iidin, $regid);
 	if ($rout) return $rout;
-	return self::getITypeInsideAWS($iidin);
+	return self::getITypeInsideAWS($iidin, $direct);
     }
     
-private static function getITypeInsideAWS($iin) {
+private static function getITypeInsideAWS($iin, $direct) {
 
     if (!isAWS()) return;
     
     $it = file_get_contents('http://169.254.169.254/latest/meta-data/instance-type'); 
+    if ($direct) return $it;
     if (!$iin && !isset($_REQUEST['iid'])) self::simpleInstTyAndExit($it);
     
     if ($iin) $inid = $iin;
