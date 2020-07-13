@@ -3,22 +3,30 @@
 require_once('/opt/kwynn/kwutils.php');
 require_once('awsConfig.php');
 
-if (isAWS()) getIIInsideAWS();
+awsInstanceType::get();
 
-function getIIInsideAWS() {
-
-    if (isAWS()) {
- 	$it = file_get_contents('http://169.254.169.254/latest/meta-data/instance-type'); 
-	if (!isset($_REQUEST['iid'])) simpleInstTyAndExitAndExit($it);
+class awsInstanceType {
+      
+    public static function get($iidin = false, $regid = false) {
+	$rout = self::getITypeOutsideAWS($iidin, $regid);
+	if ($rout) return $rout;
+	return self::getITypeInsideAWS($iidin);
     }
     
-    $inid = $_REQUEST['iid'];
+private static function getITypeInsideAWS($iin) {
+
+    if (!isAWS()) return;
+    
+    $it = file_get_contents('http://169.254.169.254/latest/meta-data/instance-type'); 
+    if (!$iin && !isset($_REQUEST['iid'])) self::simpleInstTyAndExit($it);
+    
+    if ($iin) $inid = $iin;
+    else      $inid = $_REQUEST['iid']; unset($iin);
+    
     kwas(preg_match('/^i-[0-9a-f]{8,17}$/', $inid), 'bad incoming iid format');
     
-    if (!isAWS()) simpleInstTyAndExitAndExit($it);
-    
     $aiid = file_get_contents('http://169.254.169.254/latest/meta-data/instance-id');
-    if ($aiid !== $inid) simpleInstTyAndExitAndExit($it); unset($inid);
+    if ($aiid !== $inid) self::simpleInstTyAndExit($it); unset($inid);
     
     $iid = $aiid; unset($aiid);
     $itype = $it; unset($it);
@@ -30,13 +38,13 @@ function getIIInsideAWS() {
     echo json_encode($vars);
 }
 
-function simpleInstTyAndExitAndExit($it) {
+private static function simpleInstTyAndExit($it) {
     header('Content-Type: text/plain');
     echo $it;
     exit(0);
 }
 
-function getInstanceType($urlin = KWYNN_GET_AWS_INSTANCE_TYPE_URL, $iidin = false) {
+private static function getInstanceType($urlin = KWYNN_GET_AWS_INSTANCE_TYPE_URL, $iidin = false) {
     
 try {
     kwas(iscli() || time() < strtotime('2020-07-06 04:00'), 'cli only');
@@ -65,15 +73,30 @@ try {
     
 }
 
-function getintyclitest() {
+private static function getITypeOutsideAWS($iin = false, $regid = false) {
     global $argc;
     global $argv;
     
-    if (!didCLICallMe(__FILE__)) return;
-    if ($argc < 2) die('error: the iid must be the first argument' . "\n");
+    if (isAWS()) return;
     
-    $res = getInstanceType(KWYNN_GET_AWS_INSTANCE_TYPE_URL, $argv[1]);
-    echo $res . "\n";
+    if (!$iin && !didCLICallMe(__FILE__)) return;
+    if (!$iin && $argc < 2) die('error: the iid must be the first argument - other process or func' . "\n");
+    
+    if ($iin) $iid = $iin;
+    else      $iid = $argv[1];
+    
+    $res = shell_exec("aws ec2 describe-instances --region $regid --instance-ids $iid");
+    $a   = json_decode($res, 1);
+    
+    $itype = $a['Reservations'][0]['Instances'][0]['InstanceType'];
+    
+    if (!$iin) { 
+	echo $itype . "\n";
+	exit(0);
+    }
+    
+    return $itype;
+    
+    // In my specific case, this works: $itype = self::getInstanceType(KWYNN_GET_AWS_INSTANCE_TYPE_URL, $argv[1]);
 }
-
-getintyclitest();
+}

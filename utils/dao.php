@@ -12,8 +12,21 @@ class aws_metrics_dao extends dao_generic {
 	parent::__construct(self::dbName);
 	$this->mcoll = $this->client->selectCollection(self::dbName, 'metrics');
 	$this->ocoll = $this->client->selectCollection(self::dbName, 'config');
+	$this->icoll = $this->client->selectCollection(self::dbName, 'instances');
     }
     
+    public function getI($iid, $f)        { 
+	$res = $this->icoll->findOne(['iid' => $iid]);
+	if ($res && isset($res[$f])) return $res[$f];
+	return false;
+	
+    }
+    public function putI($iid, $f, $v) {        
+	$dat['iid' ] = $iid ;
+	$dat[$f    ] = $v;
+	$this->icoll->upsert(['iid' => $iid], $dat);
+	
+    }
     
     public function getSeq($name) { return parent::getSeq($name);  }
     

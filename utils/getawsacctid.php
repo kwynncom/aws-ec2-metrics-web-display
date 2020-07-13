@@ -3,44 +3,68 @@
 require_once('/opt/kwynn/kwutils.php');
 require_once('machineInfo.php');
 
-if (PHP_SAPI === 'cli' && $argc > 1 && $argv[1] === 'test') {
-    echo getAWSAcctId();
-}
 
-function getAWSAcctId() {
-    if (getHostInfo() === 'AWS-EC2') return getAcctId169();
-    else return getAcctIdFromSTS();
-}
+awsAcctId::test();
 
-function getAcctIdFromSTS() {
-    $json = shell_exec('aws sts  get-caller-identity');
-    return getAcctIdFromJSON($json);
-}
-
-function getAcctIdFromJSON($json) {
-    $n = '"arn:aws:iam::';
-    $p = strpos($json, $n); 
-    $s = substr($json, $p + strlen($n)); unset($n, $p);
-
-    preg_match('/\d+/', $s, $matches); kwas(isset($matches[0]), 'error3'); unset($s);
-    $aid = $matches[0]; unset($matches);
-    kwas(is_string($aid) && strlen($aid) >= 6, 'error4');
-
-    return $aid;   
-}
-
-function getAcctId169() {
-try {
+class awsAcctId {
     
-$json = shell_exec('/usr/bin/wget -q -O - http://169.254.169.254/latest/meta-data/iam/info');
-$arr = json_decode($json, 1);
+    public static function test() {
+	if (!didCLICallMe(__FILE__)) return;
+	echo  self::get();
+    }
+    
+    
+    public static function get($iid = false, $dao = false) {
+	$dbr = self::db($iid, $dao, 'from');
+	if ($dbr) return $dbr;
+	if (getHostInfo() === 'AWS-EC2') $res = self::get169();
+	else $res = self::getSTS();
+	self::db($iid, $dao, 'to', $res);
+	return $res;
+	
+	
+    }
+    
+    private static function db($iid, $dao, $dir, $v = false) {
+	if (!$iid || !$dao) return;
+	
+	if ($dir === 'from') return $dao->getI($iid, 'acctid');
+	$dao->putI($iid, 'acctid', $v);
+	
+	
+    }
+    
 
-kwas(isset($arr['Code']) &&
-	   $arr['Code'] === 'Success', 'getAcctId169() error2'); unset($arr);
-	   
+    private static function getSTS() {
+	$json = shell_exec('aws sts  get-caller-identity');
+	return self::getJSON($json);
+    }
 
-return getAcctIdFromJSON($json);
+    private static function getJSON($json) {
+	$n = '"arn:aws:iam::';
+	$p = strpos($json, $n); 
+	$s = substr($json, $p + strlen($n)); unset($n, $p);
+
+	preg_match('/\d+/', $s, $matches); kwas(isset($matches[0]), 'error3'); unset($s);
+	$aid = $matches[0]; unset($matches);
+	kwas(is_string($aid) && strlen($aid) >= 6, 'error4');
+
+	return $aid;   
+    }
+
+    private static function get169() {
+    try {
+
+    $json = shell_exec('/usr/bin/wget -q -O - http://169.254.169.254/latest/meta-data/iam/info');
+    $arr = json_decode($json, 1);
+
+    kwas(isset($arr['Code']) &&
+	       $arr['Code'] === 'Success', 'getAcctId169() error2'); unset($arr);
 
 
-} catch (Exception $ex) {    kwas(0, 'error:' . $ex->getMessage()); }
-}
+    return self::getJSON($json);
+
+
+    } catch (Exception $ex) {    kwas(0, 'error:' . $ex->getMessage()); }
+    }
+} // class

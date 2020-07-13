@@ -8,6 +8,7 @@ require_once('parse.php');
 require_once(__DIR__ . '/../utils/machineInfo.php');
 require_once(__DIR__ . '/../utils/testMode.php');
 require_once(__DIR__ . '/../pcontrol/pcontrol.php');
+require_once(__DIR__ . '/../utils/getInstanceType.php');
 
 class aws_cpu {
     
@@ -19,7 +20,7 @@ class aws_cpu {
     const maxPer   = self::maxIDays * self::sind; // same in seconds
     const minPer   = 300; // minimum period as in if you run 1200 minutes end - start interval you'll run 4 periods === 1200 / 300
     const defaultDays = 30; // if never run before, run n days
-    const rerunBelowCPU = 143.98; // Depenent upon certain types of instance.  Fix this eventually.  Magic number 72 71 143 144
+    const rerunMaxMinus = 0.02;
     
     const minpts =  1530413163; // a check on time calculations - min possible timestamp - June 30, 2018 10:46:03 PM GMT-04:00
 
@@ -76,21 +77,26 @@ private static function doCmds1($daysin = 0, $dao = false, $recursiveCall = fals
 
     self::doCmds2($rarr, $dao, $cmds); // just below
     
+
+        
     $rarr['status'] = 'OK'; // we haven't thrown an exception or we wouldn't be here
     $gpm            = self::gpm($rarr);
     if ($gpm !== false) $rarr['gpm'] = $gpm; unset($gpm); 
     
     $dao->put($rarr);
     
+    $doRerunInit = self::reRunPerCPU($rarr['iid'], $rarr['cpu'], $dao, $rarr['reg']);
+    
     if ($recursiveCall)  return $rarr;
     if (!$daysin)	 return $rarr;
     if (!isset($didLonger) || !$didLonger) return $rarr;
-    
-    if (!isset($rarr['cpu'])  
-	  ||   $rarr['cpu'] >= self::rerunBelowCPU)  return $rarr;
-    
+
     if (!isset($cmds['cpu'])) return $rarr;
-     
+    
+     if (!isset($rarr['cpu'])) return $rarr;
+    
+    if (!$doRerunInit)  return $rarr;
+    
     /* If this ran a long period of time and the CPU was a bit low, I want to know the current value, so I re-run this function for the shortest 
      * amount of time.  This risks infinite recursion, but as of 2020/06/27, I think have I solved that.  */
     
@@ -98,6 +104,21 @@ private static function doCmds1($daysin = 0, $dao = false, $recursiveCall = fals
     
     return $rarr;
   
+}
+
+private static function reRunPerCPU($iid, $cpu, $dao, $reg) {
+    
+    $dbr = $dao->getI($iid, 'type');
+    if ($dbr)	$itype = $dbr; 
+    else      {	$itype  = awsInstanceType::get($iid, $reg);
+		$dao->putI($iid, 'type', $itype); }
+    unset($iid, $dbr);
+    
+    $maxcpu = getMaxCPUCreditFromInstanceType($itype); unset($itype);
+    $d =  $maxcpu - self::rerunMaxMinus;
+    if ($cpu <= $d) return true;
+    return false;
+    
 }
 
 private static function gpm($d) {

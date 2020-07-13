@@ -2,11 +2,11 @@
 
 require_once('machineInfo.php');
 
-function isTest($type) {
+function isTest($type = false) {
 
     if (isAWS()) return false;
     
-    if (time() < strtotime('2020-07-11 01:55' ))  return true;
+    if (time() < strtotime('2020-07-12 21:59' ))  return true;
     
     return 0;
     

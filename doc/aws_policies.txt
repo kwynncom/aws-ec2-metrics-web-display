@@ -1,0 +1,32 @@
+2 different AWS IAM policies to get stats and instance info such as instance type.
+The stats policy has been in place since around 2019/10.  The instance info / "describe instance" is as of 2020/07/12 5:50pm
+
+Policy 1:
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": "ec2:DescribeInstances",
+            "Resource": "*"
+        }
+    ]
+}
+
+Policy 2:
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "cloudwatch:GetMetricStatistics"
+            ],
+            "Resource": "*"
+        }
+    ]
+}

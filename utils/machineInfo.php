@@ -16,7 +16,7 @@ function getConfig($dao = false) {
 	putenv($s);
     }
   
-    $c['acctid'] = getAwsAcctId();
+    $c['acctid'] = awsAcctId::get($c['iid'], $dao);
     
     $retf = ['reg', 'iid', 'acctid'];
     
@@ -58,7 +58,7 @@ function getInstanceInfo($dao) {
     if (getHostInfo() === 'AWS-EC2') {
 	$iid = trim(shell_exec(            '/usr/bin/wget -q -O - http://169.254.169.254/latest/meta-data/instance-id'));
 	$reg = rmSubRegion(trim(shell_exec('/usr/bin/wget -q -O - http://169.254.169.254/latest/meta-data/placement/availability-zone')));
-	$acctid = getAcctId169();
+	$acctid = awsAcctId::get($iid, $dao);
 	return ['iid' => $iid, 'reg' => $reg, 'acctid' => $acctid];
     } else {
 	$c = getConfig($dao);
