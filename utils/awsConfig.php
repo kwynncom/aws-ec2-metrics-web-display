@@ -1,18 +1,5 @@
 <?php
 
-require_once('/opt/kwynn/kwutils.php');
+define('KWYNN_AWS_EC2_t3a_nano_MAX_CPU', 144);
 
-define('KWYNN_GET_AWS_INSTANCE_TYPE_URL', 'https://kwynn.com/t/9/10/cpu/utils/getInstanceType.php');
-
-function getMaxCPUCreditFromInstanceType($tin) {
-    switch($tin) {
-	case 't3a.nano' : return 144;
-    }
-    
-    kwas(0, "cannot find instance type: $tin");
-    
-} // https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/burstable-credits-baseline-concepts.html
-
-function isAWSInstanceTypeFormat($tin) {
-    return preg_match('/^[a-z0-9]{1,20}\.[a-z0-9]{1,20}$/', $tin);
-}
+// https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/burstable-credits-baseline-concepts.html

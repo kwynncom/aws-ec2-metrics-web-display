@@ -3,11 +3,12 @@
 require_once('/opt/kwynn/kwutils.php');
 require_once('dao.php');
 require_once('getawsacctid.php');
+require_once(__DIR__ . '/' . 'getCreds.php');
 
 function getConfig($dao = false) {
     
     if (!$dao) $dao = new aws_metrics_dao();
-    $c = $dao->getConfig(getCredsName()); extract($c);
+    $c = getAWSCreds(); extract($c);
     kwas($c && is_array($c), 'cannot find AWS creds');
     
     $r = preg_match_all('/([^\s]+)\s+=\s+([^\s]+)/', $c['creds'], $m); kwas(isset($m[2][1]), 'creds preg fail CPUBal');

@@ -13,6 +13,8 @@ class awsInstanceType {
 	return self::getITypeInsideAWS($iidin, $direct);
     }
     
+    public static function isTypeFormat($tin) { return preg_match('/^[a-z0-9]{1,20}\.[a-z0-9]{1,20}$/', $tin); }
+    
 private static function getITypeInsideAWS($iin, $direct) {
 
     if (!isAWS()) return;
@@ -68,7 +70,7 @@ try {
 	$itype =   $jarr['itype'];
     } else $itype = $res;
      
-    kwas(isAWSInstanceTypeFormat($itype),'bad instance type format');
+    kwas(self::isTypeFormat($itype),'bad instance type format');
     return $itype;
 } catch (Exception $ex) { return ''; }
     

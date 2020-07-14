@@ -106,6 +106,13 @@ private static function doCmds1($daysin = 0, $dao = false, $recursiveCall = fals
   
 }
 
+public static function getMaxCPUCreditFromInstanceType($tin) {
+    switch($tin) { case 't3a.nano' : return KWYNN_AWS_EC2_t3a_nano_MAX_CPU;    }
+    
+    kwas(0, "cannot find instance type: $tin");
+}
+
+
 private static function reRunPerCPU($iid, $cpu, $dao, $reg) {
     
     $dbr = $dao->getI($iid, 'type');
@@ -114,7 +121,7 @@ private static function reRunPerCPU($iid, $cpu, $dao, $reg) {
 		$dao->putI($iid, 'type', $itype); }
     unset($iid, $dbr);
     
-    $maxcpu = getMaxCPUCreditFromInstanceType($itype); unset($itype);
+    $maxcpu = self::getMaxCPUCreditFromInstanceType($itype); unset($itype);
     $d =  $maxcpu - self::rerunMaxMinus;
     if ($cpu <= $d) return true;
     return false;
