@@ -77,13 +77,16 @@ private static function doCmds1($daysin = 0, $dao = false, $recursiveCall = fals
 
     self::doCmds2($rarr, $dao, $cmds); // just below
     
-
+    self::popII($rarr['iid'], $dao, $rarr['reg']);
         
     $rarr['status'] = 'OK'; // we haven't thrown an exception or we wouldn't be here
     $gpm            = self::gpm($rarr);
     if ($gpm !== false) $rarr['gpm'] = $gpm; unset($gpm); 
     
+    
     $dao->put($rarr);
+
+     if (!isset($rarr['cpu'])) return $rarr;
     
     $doRerunInit = self::reRunPerCPU($rarr['iid'], $rarr['cpu'], $dao, $rarr['reg']);
     
@@ -91,9 +94,8 @@ private static function doCmds1($daysin = 0, $dao = false, $recursiveCall = fals
     if (!$daysin)	 return $rarr;
     if (!isset($didLonger) || !$didLonger) return $rarr;
 
-    if (!isset($cmds['cpu'])) return $rarr;
+    if ($cmds !== false && !isset($cmds['cpu'])) return $rarr;
     
-     if (!isset($rarr['cpu'])) return $rarr;
     
     if (!$doRerunInit)  return $rarr;
     
@@ -108,17 +110,34 @@ private static function doCmds1($daysin = 0, $dao = false, $recursiveCall = fals
 
 public static function getMaxCPUCreditFromInstanceType($tin) {
     switch($tin) { case 't3a.nano' : return KWYNN_AWS_EC2_t3a_nano_MAX_CPU;    }
-    
     kwas(0, "cannot find instance type: $tin");
+}
+
+public static function getMaxCPUCreditFromInstanceID($iin) {
+    $dao = new aws_metrics_dao();    
+    $dbr = $dao->getI($iin, 'max_possible_cpu');
+    kwas($dbr && is_numeric($dbr) && $dbr > 0.9, 'invalid max cpu');
+    return $dbr;
+}
+
+private static function popII($iid, $dao, $reg) {
+    $dbr = $dao->getI($iid, 'type');
+    
+    if ($dbr)	return;
+    
+    $itype  = awsInstanceType::get($iid, $reg);
+    $dao->putI($iid, 'type', $itype);
+    
+    $maxcpu = self::getMaxCPUCreditFromInstanceType($itype);
+    $dao->putI($iid, 'max_possible_cpu', $maxcpu);
+		
 }
 
 
 private static function reRunPerCPU($iid, $cpu, $dao, $reg) {
     
-    $dbr = $dao->getI($iid, 'type');
-    if ($dbr)	$itype = $dbr; 
-    else      {	$itype  = awsInstanceType::get($iid, $reg);
-		$dao->putI($iid, 'type', $itype); }
+    $dbr = $dao->getI($iid, 'type'); kwas($dbr, 'no db result reRunPerCPU()');
+    $itype = $dbr; 
     unset($iid, $dbr);
     
     $maxcpu = self::getMaxCPUCreditFromInstanceType($itype); unset($itype);
@@ -205,11 +224,15 @@ public static function declutter($din) {
     static $fs = false;
     if (!isset($din['status']) || $din['status'] !== 'OK') return false;
     
-    if (!$fs) $fs = [ 'begin_iso',  'begin_ts', 'end_exec_ts', 'end_iso', 'gpm', 'cpu'];
+    $dout = $din; unset($din);
     
-    foreach($din as $k => $ignore) if (!in_array($k, $fs)) unset($din[$k]);
+    if (isset($dout['cpu'])) $dout['max_possible_cpu'] = self::getMaxCPUCreditFromInstanceID($dout['iid']);
     
-    return $din;
+    if (!$fs) $fs = [ 'begin_iso',  'begin_ts', 'end_exec_ts', 'end_iso', 'gpm', 'cpu', 'max_possible_cpu'];
+    
+    foreach($dout as $k => $ignore) if (!in_array($k, $fs)) unset($dout[$k]);
+    
+    return $dout;
 }
 
 

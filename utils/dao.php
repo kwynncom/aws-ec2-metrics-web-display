@@ -16,7 +16,7 @@ class aws_metrics_dao extends dao_generic {
     }
     
     public function getI($iid, $f)        { 
-	$res = $this->icoll->findOne(['iid' => $iid]);
+	$res = $this->icoll->findOne(['iid' => $iid, 'datv' => 2]);
 	if ($res && isset($res[$f])) return $res[$f];
 	return false;
 	
@@ -24,6 +24,7 @@ class aws_metrics_dao extends dao_generic {
     public function putI($iid, $f, $v) {        
 	$dat['iid' ] = $iid ;
 	$dat[$f    ] = $v;
+	$dat['datv'] = 2;
 	$this->icoll->upsert(['iid' => $iid], $dat);
 	
     }
