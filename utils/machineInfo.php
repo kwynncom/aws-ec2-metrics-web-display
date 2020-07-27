@@ -41,17 +41,6 @@ function getHostInfo() {
     if (getenv('KWYNN_201704_LOCAL') === 'yes')        return 'Kwynn-local';
 }
 
-function getCredsName() {
-    
-    $kwcr1 = 'aws_cpu_creds_1_2019_10';
-    
-    return $kwcr1;
-    
-    if (getHostInfo() === 'AWS-EC2'    ) return $kwcr1;
-    if (getHostInfo() === 'Kwynn-local') return $kwcr1;
-    return 'aws_cpu_creds_2_2019_11_themorelity_1';
-}
-
 function getInstanceInfo($dao) {
     
     // curl http://169.254.169.254/latest/meta-data/instance-type   results in t3a.nano

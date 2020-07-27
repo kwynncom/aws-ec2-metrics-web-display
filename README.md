@@ -5,6 +5,59 @@ Running at https://kwynn.com/t/9/10/cpu/
 
 See detailed readmes in the doc folder, although as of 2020/07, those are older.  More recent updates below:
 
+***********
+2020/07/26 9:31pm
+
+I reworked the creds.  
+
+In getCreds.php and getAWSCreds(), the label needed is arbitrary but it has to match the creds/creds database entry, as below.  The minimal 
+contents of a non-AWS machine are
+
+{
+    "_id" : ObjectId("5f1e..."),
+    "type" : "aws_cpu_creds_2020_1_series",
+    "creds" : "aws_access_key_id = AKIA... aws_secret_access_key = tkHX...",
+    "iid" : "i-069c...",
+    "reg" : "us-east-1"
+}
+
+No creds are needed in the aws_cpu database.  No creds are needed anywhere on an AWS system because the instance can "figure out" its instance ID and 
+region through the 169.254... queries.
+
+My AWS EC2 instance (kwynn.com) is getting its permission through the "IAM role" that it runs under.  The "IAM role" and my separately created user 
+for my local machine both need this policy, or something very similar:
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "cloudwatch:GetMetricStatistics"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+
+A local (non AWS) machine needs both that policy and something similar to this:
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": "ec2:DescribeInstances",
+            "Resource": "*"
+        }
+    ]
+}
+
+That's what allows the local machine to get the instance type (such as t3a.nano).  I think I'm getting AWS account ID (billing account) from that, too.
+
+
 *****
 same day, 7:45pm
 

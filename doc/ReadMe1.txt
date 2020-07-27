@@ -47,6 +47,8 @@ requirement for running on EC2.  Given that a remote aws cli client doesn't have
 querying, and you might want to override default AWS CLI security creds, I manually installed the following in MongoDB 
 database aws_cpu and the "config" collection.  Not all of the fields are used; some are for your own reference:
 
+UPDATE: 2020/07/26 - I will update the new specs in README.md
+
 {
     "_id" : ObjectId("1abcd..."),
     "creds" : "aws_access_key_id = AKIA... aws_secret_access_key = CB/x/ABC...",
