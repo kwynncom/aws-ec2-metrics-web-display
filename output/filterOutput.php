@@ -91,7 +91,7 @@ function procAWSCPUmin($a, &$b, &$t) {
     if ( is_numeric($b) && !isset($a['cpu'])) return false;
     if (!is_numeric($b) &&  isset($a['cpu'])) return setAWSCPUmin($a, $b, $t);
     
-    if ($a['cpu'] < $b) return setAWSCPUmin($b, $t);
+    if ($a['cpu'] < $b) return setAWSCPUmin($a, $b, $t);
 }
 
 function isCPUSame($a, $i) {
