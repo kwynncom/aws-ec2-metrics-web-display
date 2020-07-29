@@ -6,6 +6,13 @@ Running at https://kwynn.com/t/9/10/cpu/
 See detailed readmes in the doc folder, although as of 2020/07, those are older.  More recent updates below:
 
 ***********
+9:53pm
+
+Although the fields are not needed, I also added the AWS username and the date the creds were created to the database.  Although you can 
+eventually figure out the AWS username from the aws_access_key_id, it's esier to know the name.  When I say username, I mean an IAM user 
+that only has very limited programmatic access, not a "console" user and certainly not a "root" user.  
+
+
 2020/07/26 9:31pm
 
 I reworked the creds.  
@@ -14,7 +21,6 @@ In getCreds.php and getAWSCreds(), the label needed is arbitrary but it has to m
 contents of a non-AWS machine are
 
 {
-    "_id" : ObjectId("5f1e..."),
     "type" : "aws_cpu_creds_2020_1_series",
     "creds" : "aws_access_key_id = AKIA... aws_secret_access_key = tkHX...",
     "iid" : "i-069c...",

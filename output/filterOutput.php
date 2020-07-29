@@ -6,7 +6,8 @@ function filterNetLogic($a, $i) {
     
     if (!isset($a[$i  ]['gpm'])) $a[$i  ]['gpm'] = 0;
     if (!isset($a[$i+1]['gpm'])) $a[$i+1]['gpm'] = 0;    
-    return abs($a[$i  ]['gpm'] - $a[$i+1]['gpm']) < $netd;
+    $and = abs($a[$i  ]['gpm'] - $a[$i+1]['gpm']);
+    return $and < $netd;
 }
 
 
@@ -29,10 +30,12 @@ function filterOutput($a) {
 	
 	$cl = false;
 	
+	if (	    !isset($a[$i  ]['cpu']) 
+	    &&	    !isset($a[$i+1]['cpu'])) $cl = true;	
 	if (	    isset($a[$i  ]['cpu']) 
-	    &&	    isset($a[$i+1]['cpu']))
-	    $cl = abs(    $a[$i  ]['cpu']
-		      -   $a[$i+1]['cpu']) < 0.002;
+	    &&	    isset($a[$i+1]['cpu']))	
+	$cl = abs(    $a[$i  ]['cpu']
+		       -   $a[$i+1]['cpu']) < 0.002;
 	
 	$nl = filterNetLogic($a, $i);
 
@@ -52,7 +55,7 @@ function filterOutput($a) {
 	    $t['status']      = 'OK'; // need to repeat this because this will become the new returned array
     	    $nsum = 0; // network sum
 	    $ssum = 0; // time sum for average
-	    $mincpu = 1000;
+	    $mincpu = ' ';
 	    $t['cpu'] = $mincpu;
 	    
 	    for($j=$bi; $j <= $ei; $j++) {
@@ -60,9 +63,11 @@ function filterOutput($a) {
 		$nsum +=  $a[$j]['net'];
 		$ssum +=  $a[$j]['end_exec_ts'] - $a[$j]['begin_ts'];
 		
-		if (isset($a[$j]['cpu']))
-		     if ($mincpu >             $a[$j]['cpu'] ) 
-			{$mincpu = $t['cpu'] = $a[$j]['cpu'];  }
+	//	if (isset($a[$j]['cpu']))
+	//	     if ($mincpu >             $a[$j]['cpu'] ) 
+	
+		procAWSCPUmin($a[$j], $mincpu, $t);
+			// {$mincpu = $t['cpu'] = $a[$j]['cpu'];  }
 	    }
 	    
 	    $bi = $ei = false; // end this combined row set
@@ -80,3 +85,20 @@ function filterOutput($a) {
     
     return array_reverse($r); // back to newest to oldest
 }
+
+function procAWSCPUmin($a, &$b, &$t) {
+    if (!is_numeric($b) && !isset($a['cpu'])) return setAWSCPUmin($a, $b, $t);
+    if ( is_numeric($b) && !isset($a['cpu'])) return false;
+    if (!is_numeric($b) &&  isset($a['cpu'])) return setAWSCPUmin($a, $b, $t);
+    
+    if ($a['cpu'] < $b) return setAWSCPUmin($b, $t);
+}
+
+function setAWSCPUmin($a, &$b, &$t) {
+    $setto = ' ';
+    if (isset($a['cpu'])) 
+    $setto = $a['cpu'];
+    $b = $t['cpu'] = $setto;
+    return true;
+}
+

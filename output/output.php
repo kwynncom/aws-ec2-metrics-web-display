@@ -46,7 +46,7 @@ function getHTFromRes($rows, $amf = false, $dao = false, $isAjax) { // $amf - "a
     
     $i = 0;
     $latestCPU = -1;
-    $latestNet = false;
+    $latestNet = -1;
     
     foreach($rows as $r) {
 
@@ -58,12 +58,9 @@ function getHTFromRes($rows, $amf = false, $dao = false, $isAjax) { // $amf - "a
 	$ht .= "<td>$cpu</td><td>$net</td><td>$edates</td><td class='bdates'>$bdates</td>";
 	$ht .= '</tr>' . "\n";
 	
-	if ($i === 0) {
-	    $latestCPU = $cpu;
-	    $latestNet = $net;
-	    $latestTS  = $r['end_exec_ts'];
-	    $x = 2;
-	}
+        if (is_numeric($cpu) && $latestCPU === -1)  $latestCPU = $cpu;
+        if (is_numeric($net) && $latestNet === -1 ) $latestNet = $net;
+        if ($i === 0) $latestTS  = $r['end_exec_ts'];
 	
 	$i++;
     }
@@ -117,8 +114,8 @@ function topOutput($cpu, $net, $dao, $asof) {
     $ht .= "<tr><td>$nd</td><td>latest network</td></tr>\n";
     
     $aa = $dao->getAgg();
-    $pn = sprintf('%0.1f', round($aa[0], 1));
-    $cn = sprintf('%0.1f', round($aa[1], 1));
+    $pn = sprintf('%0.1f', kwnullround($aa[0], 1));
+    $cn = sprintf('%0.1f', kwnullround($aa[1], 1));
     
     $ht .= "<tr><td>$cn</td><td>curr. month network usage (GB)</td></tr>\n";
     
@@ -128,6 +125,12 @@ function topOutput($cpu, $net, $dao, $asof) {
     $ht .= $asofs;
  
     return $ht;
+}
+
+function kwnullround($n, $places) {
+    if (is_numeric($n)) return round($n, $places);
+    else return ' ';
+    
 }
 
 function outCalcs($r, $i) { // $r row $i is row number
@@ -148,7 +151,7 @@ function outCalcs($r, $i) { // $r row $i is row number
     $edates = date($df, $ets);
     $bdates = date($df, $bts); unset($df);
     if (isset   ($r['cpu']))
-    $cpu = round($r['cpu'], 2);
+    $cpu = kwnullround($r['cpu'], 2);
     else
     $cpu = '';
 
