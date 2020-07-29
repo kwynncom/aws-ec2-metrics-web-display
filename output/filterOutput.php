@@ -10,6 +10,14 @@ function filterNetLogic($a, $i) {
     return $and < $netd;
 }
 
+function isCompNull($a, $i) {
+    if (	!isset($a[$i  ]['cpu']) 
+	    &&  !isset($a[$i+1]['net'])) return true;
+    if (	!isset($a[$i  ]['net']) 
+	    &&  !isset($a[$i+1]['cpu'])) return true;
+    
+    return false;
+}
 
 function filterOutput($a) {
 
@@ -28,19 +36,11 @@ function filterOutput($a) {
     
     while (isset($a[$i + 1])) {
 	
-	$cl = false;
-	
-	if (	    !isset($a[$i  ]['cpu']) 
-	    &&	    !isset($a[$i+1]['cpu'])) $cl = true;	
-	if (	    isset($a[$i  ]['cpu']) 
-	    &&	    isset($a[$i+1]['cpu']))	
-	$cl = abs(    $a[$i  ]['cpu']
-		       -   $a[$i+1]['cpu']) < 0.002;
-	
+	$cl = isCPUSame($a, $i);
 	$nl = filterNetLogic($a, $i);
-
-	$tl = $a[$i]['end_exec_ts'] < $timel;
 	
+	$tl = $a[$i]['end_exec_ts'] < $timel;
+		
 	if (($cl && $nl) || $tl) { unset($cl, $nl);
 	    if ($bi === false) $bi = $i;
 	    $ei = $i + 1;
@@ -92,6 +92,14 @@ function procAWSCPUmin($a, &$b, &$t) {
     if (!is_numeric($b) &&  isset($a['cpu'])) return setAWSCPUmin($a, $b, $t);
     
     if ($a['cpu'] < $b) return setAWSCPUmin($b, $t);
+}
+
+function isCPUSame($a, $i) {
+
+	if (	    !isset($a[$i  ]['cpu']) 
+	    ||	    !isset($a[$i+1]['cpu'])) return true;	
+	return	   abs(    $a[$i  ]['cpu']
+		       -   $a[$i+1]['cpu']) < 0.002;
 }
 
 function setAWSCPUmin($a, &$b, &$t) {
