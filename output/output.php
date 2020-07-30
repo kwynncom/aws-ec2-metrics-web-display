@@ -2,6 +2,7 @@
 
 require_once('template.php');
 require_once('filterOutput.php');
+require_once(__DIR__ . '/../utils/ubuup.php');
 
 function awsMOutput($dao, $pci) {
     
@@ -94,12 +95,31 @@ function getDUJS($only = false) {
     kwjae($out);
 }
 
+function ubuupOut() {
+    $rfv = '-';
+   
+    $o = getUbuupCli();
+    if (!$o || !is_object($o) || !isset($o->vital)) return $rfv;
+    $r =			        $o->vital ? '*Y*' : 'OK';
+    
+    return $r;
+}
+
+function getRedoBtn() {
+
+    $t = '<button onclick="window.history.go(0);">redo</button>';
+    return $t;
+    
+}
+
 function topOutput($cpu, $net, $dao, $asof) {
     $dsu = getDiskUsedPercentage('%');
     
     $ht  = '';
     $ht .= '<div id="msg" />';
     $ht .= "<tr><td id='kwdu'>$dsu</td><td>du <span id='kwduasof'></span></td></tr>\n";
+    $ht .= '<tr><td>' . ubuupOut() . '</td><td>ubuup ' . getRedoBtn() . '</td></tr>' . "\n";
+   
     
     $dt1 = date('g:ia', $asof);
     $dt2 = date('s\s m/d' , $asof);
