@@ -6,6 +6,23 @@ Running at https://kwynn.com/t/9/10/cpu/
 See detailed readmes in the doc folder, although as of 2020/07, those are older.  More recent updates below:
 
 ******
+11:58pm
+
+I check the AWS billing console for the number of metric requests I'm doing.  As of the very end of the day, my time, on August 11, I'd made 
+1,058 checks.  That's out of 1 million for free.  So I'm using 0.11% of my quota and we're over 1/3rd through the month.  The cron job for 
+my "sysadmin-email-alerts-for-aws" project runs every 30 minutes.  Then there are web checks by myself or anyone.  The checks will only run every 
+5 minutes at most, so that still would not get anywhere near the quota.
+
+The 5 minutes is the "regulated" get in awsMRegGet()--AWS metrics regulated get.
+
+Note that most checks are 2 checks--one for CPU and one for net.  But I still get nowhere near the quota.  
+
+Previously the recursive call could be another check, but that is unlikely to be called, given the frequent cron job calls.
+
+I'm unclear how often the billing console updates, but it doesn't matter so much in this case, given that I'm way, way away from the quota.
+
+
+
 2020/08/11 11:48pm EDT (GMT -4)
 
 I raised the network level to 3.98 GB / month before showing a separate row in the filtered output.  The previous setting of 0.98 was way, way 
