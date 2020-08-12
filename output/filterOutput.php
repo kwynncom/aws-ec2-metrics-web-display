@@ -2,7 +2,7 @@
 
 function filterNetLogic($a, $i) {
 
-    static $netd = 0.98;
+    static $netd = 3.98;
     
     if (!isset($a[$i  ]['gpm'])) $a[$i  ]['gpm'] = 0;
     if (!isset($a[$i+1]['gpm'])) $a[$i+1]['gpm'] = 0;    
