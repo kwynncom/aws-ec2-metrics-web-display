@@ -10,9 +10,6 @@ function getAWSNetMonth() {
     $now = time();
     $ds = $now - $bmts;
     $dd = $ds / 86400;
-    
-    // echo $dd;
-    
     $na = aws_cpu::awsMRegGet($dd, ['net'], 1, 0);
     return;
     

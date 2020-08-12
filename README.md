@@ -5,6 +5,27 @@ Running at https://kwynn.com/t/9/10/cpu/
 
 See detailed readmes in the doc folder, although as of 2020/07, those are older.  More recent updates below:
 
+******
+2020/08/11 11:48pm EDT (GMT -4)
+
+I raised the network level to 3.98 GB / month before showing a separate row in the filtered output.  The previous setting of 0.98 was way, way 
+too cluttered.
+
+I also created getAWSNetMonth() to confirm the weighted average calcuation of GB / month.  The new function checks for the whole month directly 
+rather than by calculation.  
+
+Moments ago, the calculation shows 0.6 (rounded to the 0.1 place) and the check shows 0.76.  That's close enough for my purposes.  
+
+Given that the calculation is close enough, the new function is inert, in that it's not being called by anything.  It's also protected against 
+web calls by kwcod.php ("Kwynn's CLI or die").
+
+I should add that the new function doesn't echo or return anything.  I'm using the NetBeans debugger on the "return" line to read the data.  
+In fact, I put the return line there because the debugger needs a statement to attach a breakpoint to.  You may also see "$x = 2;" sometimes in my 
+code.  That's there for the same purpose--to give a breakpoint attachment.  
+
+The $x thing is all well and good until I'm dealing with coordinates (x,y).  Then it really messes me up.  I need to create some sort of null 
+statement, or think of something close enough.
+
 ***********
 9:53pm
 
