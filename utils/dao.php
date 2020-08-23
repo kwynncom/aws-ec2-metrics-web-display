@@ -43,8 +43,12 @@ class aws_metrics_dao extends dao_generic {
 	if (!$sin) $since = time() - 86400 * self::defaultDays;
 	else       $since = $sin;
 	
-	return  $this->mcoll->find(['end_exec_ts' => ['$gte' => $since], 'status' => 'OK'], 
-		['sort' => ['begin_ts' => -1, 'end_exec_ts' => -1, 'cpu' => -1]])->toArray();  
+	$sq['end_exec_ts'] = -1;
+	$sq['cpu'	 ] = -1;
+	$sq['begin_ts'   ] = -1;
+
+	
+	return  $this->mcoll->find(['end_exec_ts' => ['$gte' => $since], 'status' => 'OK'], ['sort' =>  $sq])->toArray();  
 	
     }
     
