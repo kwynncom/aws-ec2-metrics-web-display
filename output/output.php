@@ -1,8 +1,9 @@
 <?php
 
-require_once('template.php');
+require_once('templateCaller.php');
 require_once('filterOutput.php');
 require_once(__DIR__ . '/../utils/ubuup.php');
+require_once(__DIR__ . '/../get/journal.php');
 
 function awsMOutput($dao, $pci) {
     
@@ -113,12 +114,17 @@ function getRedoBtn() {
 }
 
 function topOutput($cpu, $net, $dao, $asof) {
-    $dsu = getDiskUsedPercentage('%');
-    
     $ht  = '';
-    $ht .= '<div id="msg" />';
-    $ht .= "<tr><td id='kwdu'>$dsu</td><td>du <span id='kwduasof'></span></td></tr>\n";
-    $ht .= '<tr><td>' . ubuupOut() . '</td><td>ubuup ' . getRedoBtn() . '</td></tr>' . "\n";
+    $dsu10 = sprintf('%4.1f', getDiskUsedPercentage()) . '%';
+    $jsu10 = sprintf('%4.1f', journalSizePer()       ) . '%';
+    $dsu   =  str_replace(' ', '&nbsp;', $dsu10);
+    $jsu   =  str_replace(' ', '&nbsp;', $jsu10);
+    
+    
+    $ht .= "<tr><td id='kwdu' class=''>$dsu</td><td>du <span id='kwduasof'></span></td></tr>\n";
+
+    $ht .= "<tr><td class=''>$jsu</td><td>/var/log/journal</td></tr>\n";
+    $ht .= '<tr><td class="">' . ubuupOut() . '</td><td>ubuup ' . getRedoBtn() . '</td></tr>' . "\n";
    
     
     $dt1 = date('g:ia', $asof);
@@ -127,20 +133,20 @@ function topOutput($cpu, $net, $dao, $asof) {
     
     $scurl = 'https://github.com/kwynncom/aws-ec2-metrics-web-display';
     
-    $ht .= "<tr><td>$cpu</td><td>curr. CPU bal. (<a href='$scurl'>source code</a>)</td></tr>\n";
+    $ht .= "<tr><td class=''>$cpu</td><td>curr. CPU bal. (<a href='$scurl'>source code</a>)</td></tr>\n";
     
     $nd = '-';
     if (is_numeric($net)) $nd  = sprintf('%0.1f',  $net);
-    $ht .= "<tr><td>$nd</td><td>latest network</td></tr>\n";
+    $ht .= "<tr><td class=''>$nd</td><td>latest network</td></tr>\n";
     
     $aa = $dao->getAgg();
     $pn = sprintf('%0.1f', kwnullround($aa[0], 1));
     $cn = sprintf('%0.1f', kwnullround($aa[1], 1));
     
-    $ht .= "<tr><td>$cn</td><td>curr. month network usage (GB)</td></tr>\n";
+    $ht .= "<tr><td class=''>$cn</td><td>curr. month network usage (GB)</td></tr>\n";
     
     if (date('j') <= 3)
-    $ht .= "<tr><td>$pn</td><td>prev. month network usage (GB)</td></tr>\n";
+    $ht .= "<tr><td class=''>$pn</td><td>prev. month network usage (GB)</td></tr>\n";
     
     $ht .= $asofs;
  

@@ -97,14 +97,14 @@ function getTheCmd($reg, $iid, $begin, $end, $per, $metric, $stat) {
     return $cmd;
 }
 
-function getDiskUsedPercentage($sfx = '') {
+function getDiskUsedPercentage() {
     $f = disk_free_space (__DIR__);
     $t = disk_total_space(__DIR__);
     $pf = $f / $t;
     $uf  = 1 - $pf;
-    $upr  = round($uf * 100, 1);
-    return number_format($upr, 1) . $sfx;
-        
+    $t10 = sprintf('%4.1f', $uf * 100);
+    $t20 = str_replace(' ', '&nbsp;', $t10);
+    return $t20 . '%';
 }
 
 function doCLIDirect() {
