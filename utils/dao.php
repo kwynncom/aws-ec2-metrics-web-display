@@ -44,7 +44,7 @@ class aws_metrics_dao extends dao_generic {
 	else       $since = $sin;
 	
 	$sq['end_exec_ts'] = -1;
-	$sq['cpu'	 ] = -1;
+	$sq['cpu'	 ] =  1;
 	$sq['begin_ts'   ] = -1;
 
 	
