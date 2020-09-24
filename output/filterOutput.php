@@ -23,7 +23,6 @@ function filterOutput($a) {
 
     if (count($a) < 2) return $a; // nothing to filter if only 1 row
     
-    foreach($a as $i => $row) if ($a[$i]['status'] !== 'OK') unset($a[$i]); // remember that I store pre-fetch.  If the data isn't complete, skip it
     $a = array_values($a);  // reset indexes after possibly removing elements just above
     $a = array_reverse($a); // reset to oldest first for filtering
     

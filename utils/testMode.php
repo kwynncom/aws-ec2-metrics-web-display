@@ -3,7 +3,7 @@
 require_once('machineInfo.php');
 
 function isTest($type = false) {
-
+  
     if (isAWS()) return false;
     
     if (time() < strtotime('2020-07-28 22:08' ))  return true;
