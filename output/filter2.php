@@ -13,17 +13,14 @@ class aws_metrics_filtered_out extends aws_metrics_dao {
     
     private function __construct($since) {
 	parent::__construct(self::dbName);
+	$this->a10 = false;
 	$this->get10($since);
 	$this->f10();
     }
     
     private function f10() {
 	$ain = $this->thein;
-	
-	foreach($ain as $r) {
-	    $this->build10($r);
-	}
-	
+	foreach($ain as $r) $this->build10($r);
 	$a10 = $this->a10;
 	return;
     }

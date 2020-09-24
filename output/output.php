@@ -188,13 +188,14 @@ function outCalcs($r, $i) { // $r row $i is row number
 
     $print = false;
 
-    if (!isTest('f2')) $showIGT = 86400 * 2;
+    if (!isTest('f2')) $showIGT = 12000;
     else               $showIGT = 120;
       
     if ($cpu < aws_cpu::getMaxCPUCreditFromInstanceID($iid) - 0.02) $print = true;
     if ($dts > 86000) $print = true;
     if ($i < 5)       $print = true;
     if ($now - $ets < $showIGT ) $print = true;
+    if ($net > 3.99) $print = true;
 
     $rvs = ['cpu', 'net', 'edates', 'bdates', 'print'];
     return compact($rvs);
