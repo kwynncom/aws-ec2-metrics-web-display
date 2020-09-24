@@ -2,7 +2,7 @@
 
 function filterNetLogic($a, $i) {
 
-    static $netd = 3.98;
+    static $netd = 8;
     
     if (!isset($a[$i  ]['gpm'])) $a[$i  ]['gpm'] = 0;
     if (!isset($a[$i+1]['gpm'])) $a[$i+1]['gpm'] = 0;    
@@ -20,7 +20,7 @@ function isCompNull($a, $i) {
 }
 
 function filterOutput($a) {
-
+    
     if (count($a) < 2) return $a; // nothing to filter if only 1 row
     
     $a = array_values($a);  // reset indexes after possibly removing elements just above
@@ -51,7 +51,7 @@ function filterOutput($a) {
 	    
 	    $t['end_exec_ts'] = $a[$ei]['end_exec_ts'];
 	    $t['begin_ts'] = $a[$bi]['begin_ts'];
-	    $t['status']      = 'OK'; // need to repeat this because this will become the new returned array
+	    
     	    $nsum = 0; // network sum
 	    $ssum = 0; // time sum for average
 	    $mincpu = ' ';
@@ -72,7 +72,7 @@ function filterOutput($a) {
 	    $bi = $ei = false; // end this combined row set
 	    
 	    $t['netavg'] = getCAWSAvg($nsum, $ssum); unset($nsum, $ssum); // gets the calculation and format we want - Combined AWS Average
-	    
+
 	    $r[] = $t; unset($t); // add temp array to return array
 	} else if (!$same) {
 	    $r[] = $a[$i]; // don't combine the row, just add it to the return array

@@ -4,6 +4,7 @@ require_once('templateCaller.php');
 require_once('filterOutput.php');
 require_once(__DIR__ . '/../utils/ubuup.php');
 require_once(__DIR__ . '/../get/journal.php');
+require_once('filter2.php');
 
 function awsMOutput($dao, $pci) {
     
@@ -11,7 +12,7 @@ function awsMOutput($dao, $pci) {
 	  $since = $pci['ts'];
     else  $since = false;
     
-    $rows = $dao->getSince($since); // if no argument, get default number (N) days of data
+    $rows = aws_metrics_filtered_out::get($since); // if no argument, get default number (N) days of data
     if ($since && !$rows) getDUJS(1);
     $rht = getHTFromRes ($rows, 0, 0, $since); // raw HTML
     $fres = filterOutput($rows); // filtered result
@@ -162,6 +163,10 @@ function kwnullround($n, $places) {
 function outCalcs($r, $i) { // $r row $i is row number
     
     static $now = false;
+    static $iid = false;
+    
+    if (!$iid) $iid = $r['iid'];
+    
     if (!$now) $now = time();
     
     $df = 'm/d h:ia';
@@ -185,8 +190,8 @@ function outCalcs($r, $i) { // $r row $i is row number
 
     if (!isTest('f2')) $showIGT = 86400 * 2;
     else               $showIGT = 120;
-    
-    if ($cpu < 71.98) $print = true;
+      
+    if ($cpu < aws_cpu::getMaxCPUCreditFromInstanceID($iid) - 0.02) $print = true;
     if ($dts > 86000) $print = true;
     if ($i < 5)       $print = true;
     if ($now - $ets < $showIGT ) $print = true;
