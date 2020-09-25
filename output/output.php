@@ -6,6 +6,17 @@ require_once(__DIR__ . '/../utils/ubuup.php');
 require_once(__DIR__ . '/../get/journal.php');
 require_once('filter2.php');
 
+function setCPUMax($rsin) {
+    if (defined('MAX_AWS_CPU')) return;
+    if (!isset($rsin[0]['iid'])) return;
+    $d       = $rsin[0]['iid'];
+    $max = aws_cpu::getMaxCPUCreditFromInstanceID($d);
+    define('MAX_AWS_CPU', $max);
+    
+    
+  
+}
+
 function awsMOutput($dao, $pci) {
     
     if (isset(     $pci['ts'])) 
@@ -14,6 +25,7 @@ function awsMOutput($dao, $pci) {
     
     $rows = aws_metrics_filtered_out::get($since); // if no argument, get default number (N) days of data
     if ($since && !$rows) getDUJS(1);
+    setCPUMax($rows);
     $rht = getHTFromRes ($rows, 0, 0, $since); // raw HTML
     $fres = filterOutput($rows); // filtered result
     $fa  =  getHTFromRes($fres, 1, $dao, $since); // filtered HTML
@@ -62,8 +74,11 @@ function getHTFromRes($rows, $amf = false, $dao = false, $isAjax) { // $amf - "a
 	
 	if (!$amf && !$print) continue;
 	
+	$nets = sprintf('%0.2f', $net);
+	
 	$ht .= '<tr>';
-	$ht .= "<td>$cpu</td><td>$net</td><td>$edates</td><td class='bdates'>$bdates</td>";
+	$cpus = cpuos($cpu);
+	$ht .= "<td>$cpus</td><td class='tar'>$nets</td><td>$edates</td><td class='bdates'>$bdates</td>";
 	$ht .= '</tr>' . "\n";
 	
         if (is_numeric($cpu) && $latestCPU === -1)  $latestCPU = $cpu;
@@ -84,6 +99,12 @@ function getHTFromRes($rows, $amf = false, $dao = false, $isAjax) { // $amf - "a
     }
     
     return $ht;
+}
+
+function cpuos($c) {
+    if (abs($c - MAX_AWS_CPU) < 0.005) return intval($c);
+    else return sprintf('%3.2f', $c);
+    
 }
 
 function getDUJS($only = false) {
@@ -183,10 +204,7 @@ function outCalcs($r, $i) { // $r row $i is row number
     $ets = $r['end_exec_ts'];
     $dts = $ets - $bts;
     
-    $net = false;
-    
-    if    ( !isset( $r['netavg']) && isset($r['net'])) $net = getCAWSAvg($r['net'], $dts);
-    else if (isset( $r['netavg'])) $net = $r['netavg'];
+    $net = $r['gpm'];
 
     $edates = date($df, $ets);
     $bdates = date($df, $bts); unset($df);

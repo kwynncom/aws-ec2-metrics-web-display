@@ -30,7 +30,7 @@ function combineRows($a, &$bi, &$ei, $i) {
 
     $bi = $ei = false; // end this combined row set
 
-    $t['netavg'] = getCAWSAvg($nsum, $ssum); unset($nsum, $ssum); // gets the calculation and format we want - Combined AWS Average
+    $t['gpm'] = getCAWSAvg($nsum, $ssum); unset($nsum, $ssum); // gets the calculation and format we want - Combined AWS Average
     return $t;
 
 }
@@ -71,17 +71,11 @@ function fo30($a) {
     
     $r[] = $a[0];
     for ($i=1; isset($a[$i + 1]); $i++) {   
-	
 	$r0 = $a[$i];
-	$r1 = $a[$i+1];
 	
-	if (co30l($r0['cpu'])
-		)
-		
-		 {
+	if (co30l($r0['cpu'])) {
 	    if ($bi === false) $bi = $i;
 	    $ei = $i;
-	    if ($r1['cpu'] < $lowest) $lowest = $r1['cpu'];
 	} 
 	else {
 	    $ei = $i;
@@ -103,29 +97,6 @@ function clt($a, $b) {
     if ($a < $b) return true;
     if (abs($a - $b) < 0.003) return true;
     return false;
-}
-
-function fo_30_o1($a) {  // fails - they all overlap!!
-    $bi = $ei = false; // begin and end indexes of rows that do not vary much  
-    
-    if (!isset($a[0])) return [];
-    
-    $r[] = $a[0];
-    for ($i=1; isset($a[$i + 1]); $i++) {   
-	if ($a[$i]['begin_ts'] < $a[$i+1]['end_exec_ts']) {
-	    if ($bi === false) $bi = $i;
-	    $ei = $i;
-	} else {
-	    $ei = $i;
-	    if ($bi === false) $bi = $i;
-	    $crr = combineRows($a, $bi, $ei, $i);
-	    $r[] = $crr;	    
-	}
-    }
-    
-    if ($i === 0) return $a;
-    
-    return $r;
 }
 
 function filterOutput20($a) {

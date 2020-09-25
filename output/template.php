@@ -14,6 +14,7 @@
     div.dsu     { margin-bottom: 1ex}
     #topt       { font-size: 110%; margin-bottom: 1ex }
     .tar        { text-align: right}
+    td		{ padding-right: 0.7ex}
  </style>
 </head>
 <body>
