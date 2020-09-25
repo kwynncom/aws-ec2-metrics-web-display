@@ -1,71 +1,169 @@
 <?php
 
 function filterNetLogic($a, $i) {
-    static $netd = 4;
+    static $netd = 20;
     return $a[$i]['gpm'] < $netd;
 }
 
-function filterOutput($a) {
+function combineRows($a, &$bi, &$ei, $i) {
+    
+    if ($bi === $ei) {
+	$bi = $ei = false;
+	return $a[$i];
+	
+    }
+    
+    $t['end_exec_ts'] = $a[$bi]['end_exec_ts'];
+    $t['begin_ts']    = $a[$ei]['begin_ts'];
 
-    $i = 0;
+    $nsum = 0; // network sum
+    $ssum = 0; // time sum for average
+    $mincpu = ' ';
+    $t['cpu'] = $mincpu;
+
+    for($j=$bi; $j <= $ei; $j++) {
+	if (isset($a[$j]['net']))
+	$nsum +=  $a[$j]['net'];
+	$ssum +=  $a[$j]['end_exec_ts'] - $a[$j]['begin_ts'];
+	procAWSCPUmin($a[$j], $mincpu, $t);
+    }
+
+    $bi = $ei = false; // end this combined row set
+
+    $t['netavg'] = getCAWSAvg($nsum, $ssum); unset($nsum, $ssum); // gets the calculation and format we want - Combined AWS Average
+    return $t;
+
+}
+
+function filterOutput($a) {
+    $a = filterOutput20($a);
+    $a = fo30($a);
+    return $a;
+}
+
+// clt($lowest, $r1['cpu'])		||
+	//	clt($r1['cpu'], $r0['cpu'])
+
+function co30l($cpu) {
     
+    static $lowest = MAX_AWS_CPU;
+    static $state  = 'start';
+    
+    $l1 = clt($cpu, $lowest);
+    if ($l1 && $cpu < $lowest) {
+	$state = 1;
+	$lowest = $cpu;
+    }
+    
+    return  $l1 || ($state === 1  && !clt($cpu, MAX_AWS_CPU))    ;
+}
+
+function fo30($a) {
+    
+    $bi = $ei = false;
+    
+    $r = [];
+    if (!isset($a[0])) return $r;
+    
+    if (!defined('MAX_AWS_CPU')) define('MAX_AWS_CPU', aws_cpu::getMaxCPUCreditFromInstanceID($a[0]['iid']));
+    
+    $lowest = MAX_AWS_CPU;
+    
+    $r[] = $a[0];
+    for ($i=1; isset($a[$i + 1]); $i++) {   
+	
+	$r0 = $a[$i];
+	$r1 = $a[$i+1];
+	
+	if (co30l($r0['cpu'])
+		)
+		
+		 {
+	    if ($bi === false) $bi = $i;
+	    $ei = $i;
+	    if ($r1['cpu'] < $lowest) $lowest = $r1['cpu'];
+	} 
+	else {
+	    $ei = $i;
+	    if ($bi === false) $bi = $i;
+	    $crr = combineRows($a, $bi, $ei, $i);
+	    $r[] = $crr;	    
+	}
+    }
+ 
+    if ($bi !== false) $r[] = combineRows($a, $bi, $ei, $i);
+    
+    return $r;    
+}
+
+function clt($a, $b) {
+    
+    if (abs(MAX_AWS_CPU - $a) < 0.01) return false;
+    
+    if ($a < $b) return true;
+    if (abs($a - $b) < 0.003) return true;
+    return false;
+}
+
+function fo_30_o1($a) {  // fails - they all overlap!!
+    $bi = $ei = false; // begin and end indexes of rows that do not vary much  
+    
+    if (!isset($a[0])) return [];
+    
+    $r[] = $a[0];
+    for ($i=1; isset($a[$i + 1]); $i++) {   
+	if ($a[$i]['begin_ts'] < $a[$i+1]['end_exec_ts']) {
+	    if ($bi === false) $bi = $i;
+	    $ei = $i;
+	} else {
+	    $ei = $i;
+	    if ($bi === false) $bi = $i;
+	    $crr = combineRows($a, $bi, $ei, $i);
+	    $r[] = $crr;	    
+	}
+    }
+    
+    if ($i === 0) return $a;
+    
+    return $r;
+}
+
+function filterOutput20($a) {
+
     if (count($a) < 2) return $a; // nothing to filter if only a few rows
-    
-    // $a = array_reverse($a); // reset to oldest first for filtering
-    
-    $r = []; // rows I will build
     
     $bi = $ei = false; // begin and end indexes of rows that do not vary much
     
     $timel = time() - 12000;
     
-    while (isset($a[$i + 1])) {
+    $mp = date('m'); // month pointer
+    
+    for ($i=0; isset($a[$i]); $i++) {
+	$row = $a[$i];
 	
-	$cl = $a[$i]['cpu'] > aws_cpu::getMaxCPUCreditFromInstanceID($a[$i]['iid']) - 0.02;
+	$cl = $row['cpu'] > aws_cpu::getMaxCPUCreditFromInstanceID($a[$i]['iid']) - 0.02;
 	$nl = filterNetLogic($a, $i);
 	
-	$tl = $a[$i]['end_exec_ts'] < $timel;
-	// $tl = 0;
+	// $tl = $a[$i]['end_exec_ts'] < $timel;
+	$tl = 0;
 		
-	if ((($cl && $nl) || $tl) && $i > 0) { unset($cl, $nl);
+	$rm = date('m', $a[$i]['end_exec_ts']); // row month
+	
+	if ((($cl && $nl) || $tl) && $i > 0  && $rm === $mp) { unset($cl, $nl);
 	    if ($bi === false) $bi = $i;
-	    $ei = $i + 1;
-	    $same = true;
+	    $ei = $i;
 	}
-	else $same = false;
-		
-	if ((!$same || (($i + 2) === count($a))) && $bi !== false) { // create a combined row
-	    
-	    $t['end_exec_ts'] = $a[$ei]['end_exec_ts'];
-	    $t['begin_ts']    = $a[$bi]['begin_ts'];
-	    
-    	    $nsum = 0; // network sum
-	    $ssum = 0; // time sum for average
-	    $mincpu = ' ';
-	    $t['cpu'] = $mincpu;
-	    
-	    for($j=$bi; $j <= $ei; $j++) {
-		if (isset($a[$j]['net']))
-		$nsum +=  $a[$j]['net'];
-		$ssum +=  $a[$j]['end_exec_ts'] - $a[$j]['begin_ts'];
-		procAWSCPUmin($a[$j], $mincpu, $t);
-	    }
-	    
-	    $bi = $ei = false; // end this combined row set
-	    
-	    $t['netavg'] = getCAWSAvg($nsum, $ssum); unset($nsum, $ssum); // gets the calculation and format we want - Combined AWS Average
-
-	    $r[] = $t; unset($t); // add temp array to return array
-	} else if (!$same) {
-	    $r[] = $a[$i]; // don't combine the row, just add it to the return array
-	    if ($i + 2 === count($a)) $r[] = $a[$i+1]; // if we're at the end and don't combine, add the latest row
+	else {
+	    $ei = $i;
+	    if ($bi === false) $bi = $i;
+	    $crr = combineRows($a, $bi, $ei, $i);
+	    $r[] = $crr;
 	}
 	
-	$i++;
+	$mp = $rm;
     }
     
     return $r;
-    // return array_reverse($r); // back to newest to oldest
 }
 
 function procAWSCPUmin($a, &$b, &$t) {

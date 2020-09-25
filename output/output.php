@@ -53,6 +53,11 @@ function getHTFromRes($rows, $amf = false, $dao = false, $isAjax) { // $amf - "a
     
     foreach($rows as $r) {
 
+	if (!isset($r['begin_ts'])) {
+	    $ignore = 2;
+	    
+	}
+	
 	$rres = outCalcs($r, $i); extract($rres);
 	
 	if (!$amf && !$print) continue;
@@ -170,6 +175,10 @@ function outCalcs($r, $i) { // $r row $i is row number
     if (!$now) $now = time();
     
     $df = 'm/d h:ia';
+    if (!isset($r['begin_ts'])) {
+	$ingore = 2;
+	
+    }
     $bts = $r['begin_ts'];
     $ets = $r['end_exec_ts'];
     $dts = $ets - $bts;

@@ -114,9 +114,15 @@ public static function getMaxCPUCreditFromInstanceType($tin) {
 }
 
 public static function getMaxCPUCreditFromInstanceID($iin) {
+    
+    static $cache = [];
+    
+    if (isset($cache[$iin])) return $cache[$iin];
+    
     $dao = new aws_metrics_dao();    
     $dbr = $dao->getI($iin, 'max_possible_cpu');
     kwas($dbr && is_numeric($dbr) && $dbr > 0.9, 'invalid max cpu');
+    $cache[$iin] = $dbr;
     return $dbr;
 }
 
