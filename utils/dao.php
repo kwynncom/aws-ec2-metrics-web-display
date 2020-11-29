@@ -47,7 +47,7 @@ class aws_metrics_dao extends dao_generic {
 	$sq['begin_ts'   ] = -1;
 	// $sq['cpu'	 ] =  1;
 	$fsq['sort'] = $sq;
-	$pj = ['end_exec_ts' => 1, 'begin_ts' => 1, 'net' => 1, 'cpu' => 1, 'gpm' => 1, '_id' => 0, 'end_iso' => 1, 'begin_iso' => 1, 'iid' => 1];
+	$pj = ['end_exec_ts' => 1, 'begin_ts' => 1, 'net' => 1, 'cpu' => 1, 'gpm' => 1, '_id' => 0, 'end_iso' => 1, 'begin_iso' => 1, 'iid' => 1, 'lav' => 1];
 	$a2['sort'] = $sq;
 	$a2['projection'] = $pj;
 		// [$fsq, $p];

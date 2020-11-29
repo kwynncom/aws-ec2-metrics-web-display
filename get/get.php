@@ -83,6 +83,7 @@ private static function doCmds1($daysin = 0, $dao = false, $recursiveCall = fals
     $gpm            = self::gpm($rarr);
     if ($gpm !== false) $rarr['gpm'] = $gpm; unset($gpm); 
     
+    if (isset($rarr['cpu']) && !$recursiveCall) $rarr['lav'] = sys_getloadavg();
     
     $dao->put($rarr);
 

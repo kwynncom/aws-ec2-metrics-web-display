@@ -5,6 +5,7 @@ require_once('filterOutput.php');
 require_once(__DIR__ . '/../utils/ubuup.php');
 require_once(__DIR__ . '/../get/journal.php');
 require_once('filter2.php');
+require_once('outils.php');
 
 function setCPUMax($rsin) {
     if (defined('MAX_AWS_CPU')) return;
@@ -53,7 +54,7 @@ function awsMOutput($dao, $pci) {
 function getHTFromRes($rows, $amf = false, $dao = false, $isAjax) { // $amf - "am I (is $rows) already filtered?"
     $ht = '';
     
-    if (!$isAjax) $ht .= "<thead><tr><th class='cpu'>cpu</th><th>net</th><th>end</th><th>beg</th></tr></thead>\n";
+    if (!$isAjax) $ht .= "<thead><tr><th class='cpu'>cpu</th><th class='lav'>load avg</th><th>net</th><th>end</th><th>beg</th></tr></thead>\n";
     if ($amf) $id = 'filttb';
     else      $id = 'rawtb';
     
@@ -62,6 +63,8 @@ function getHTFromRes($rows, $amf = false, $dao = false, $isAjax) { // $amf - "a
     $i = 0;
     $latestCPU = -1;
     $latestNet = -1;
+    
+    if (!$rows) $rows = [];
     
     foreach($rows as $r) {
 
@@ -78,7 +81,9 @@ function getHTFromRes($rows, $amf = false, $dao = false, $isAjax) { // $amf - "a
 	
 	$ht .= '<tr>';
 	$cpus = cpuos($cpu);
-	$ht .= "<td>$cpus</td><td class='tar'>$nets</td><td>$edates</td><td class='bdates'>$bdates</td>";
+	$ht .= "<td>$cpus</td>";
+	if ($amf || 1) $ht .= awsmoc::getLavTD($r);
+	$ht .= "<td class='tar'>$nets</td><td>$edates</td><td class='bdates'>$bdates</td>";
 	$ht .= '</tr>' . "\n";
 	
         if (is_numeric($cpu) && $latestCPU === -1)  $latestCPU = $cpu;

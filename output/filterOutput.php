@@ -100,7 +100,8 @@ function clt($a, $b) {
 }
 
 function filterOutput20($a) {
-
+    
+    if (!$a) $a = [];
     if (count($a) < 2) return $a; // nothing to filter if only a few rows
     
     $bi = $ei = false; // begin and end indexes of rows that do not vary much

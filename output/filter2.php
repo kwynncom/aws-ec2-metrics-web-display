@@ -51,6 +51,8 @@ class aws_metrics_filtered_out extends aws_metrics_dao {
 	
 	$t['iid'] = $r['iid'];
 	
+	if (isset($r['lav'])) $t['lav'] = $r['lav'];
+	
 	$this->a10[] = $t;
 	$t = false;
 	
