@@ -17,9 +17,28 @@
     .tar        { text-align: right}
     td		{ padding-right: 0.7ex}
      .lav	{ display: none; } 
-    .cbp	{ margin-top: 1.5ex; font-size: 120%; padding-left: 1.0ex }
-    .cb         { transform: scale(1.7);  }
-    .lavl	{ padding-left: 0.5ex; }
+   /* .cbp	{ margin-top: 1.5ex; font-size: 120%; padding-left: 1.0ex }
+    .cb         { transform: scale(1.0); border: 3px solid black; padding: 2px; margin: 1px; display: inline-block; } */
+    .lavl	{ padding-left: 0.5ex; font-size: 110%; }
+    
+    .cbp10 { 
+	 background-color: #aaaaaa; 
+         display: inline-block; 
+         height: 1.55em; 
+         width:  1.55em; 
+         position: relative; 
+         border-radius: 5px;
+    }
+    .cb10 {
+        transform: scale(1.3);
+        display: block;
+        position: absolute;
+        top: 50%;
+        height: 1.1em; width: 1.1em;
+        margin: -0.59em 0 0 0.38em;
+        /* top bottom right left*/
+
+    }
  </style>
 </head>
 <body>
@@ -27,7 +46,7 @@
     <table id='topt'><?php echo $tht; ?></table>
     <table>	     <?php echo $fht; ?></table>
     
-    <div class='cbp'><input type='checkbox' class='cb' onclick='cbClick(this.checked);' /><label class='lavl'>show load averages</label></div>    
+    <!-- <div class='cbp'></div>     -->
     
     <table class='raw'><caption>more calls</caption>
 		     <?php echo $rht; ?></table>

@@ -165,11 +165,13 @@ function topOutput($cpu, $net, $dao, $asof) {
     
     $scurl = 'https://github.com/kwynncom/aws-ec2-metrics-web-display';
     
-    $ht .= "<tr><td class=''>$cpu</td><td>curr. CPU bal. (<a href='$scurl'>source code</a>)</td></tr>\n";
+    $lbtn = awsmoc::loadbtn();
+    
+    $ht .= "<tr><td class=''>$cpu</td><td>curr. CPU bal. $lbtn</td></tr>\n";
     
     $nd = '-';
     if (is_numeric($net)) $nd  = sprintf('%0.1f',  $net);
-    $ht .= "<tr><td class=''>$nd</td><td>latest network</td></tr>\n";
+    $ht .= "<tr><td class=''>$nd</td><td>latest network (<a href='$scurl'>source code</a>)</td></tr>\n";
     
     $aa = $dao->getAgg();
     $pn = sprintf('%0.1f', kwnullround($aa[0], 1));
