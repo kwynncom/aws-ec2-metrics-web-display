@@ -16,7 +16,7 @@
     #topt       { font-size: 110%; margin-bottom: 1ex }
     .tar        { text-align: right}
     td		{ padding-right: 0.7ex}
-     .lav	{ display: none; } 
+     .lav	{ display: none; text-align: center; } 
    /* .cbp	{ margin-top: 1.5ex; font-size: 120%; padding-left: 1.0ex }
     .cb         { transform: scale(1.0); border: 3px solid black; padding: 2px; margin: 1px; display: inline-block; } */
     .lavl	{ padding-left: 0.5ex; font-size: 110%; }
@@ -24,8 +24,8 @@
     .cbp10 { 
 	 background-color: #aaaaaa; 
          display: inline-block; 
-         height: 1.55em; 
-         width:  1.55em; 
+         height: 1.75em; 
+         width:  1.75em; 
          position: relative; 
          border-radius: 5px;
     }
@@ -35,7 +35,7 @@
         position: absolute;
         top: 50%;
         height: 1.1em; width: 1.1em;
-        margin: -0.59em 0 0 0.38em;
+        margin: -0.557em 0 0 0.37em;
         /* top bottom right left*/
 
     }

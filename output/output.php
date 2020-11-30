@@ -140,7 +140,7 @@ function ubuupOut() {
 
 function getRedoBtn() {
 
-    $t = '<button onclick="window.history.go(0);">redo</button>';
+    $t = '<button onclick="window.history.go(0);">recheck</button>';
     return $t;
     
 }
