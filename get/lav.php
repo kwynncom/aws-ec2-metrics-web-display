@@ -7,12 +7,12 @@ class dao_lav extends dao_generic_2 {
     
     const dbName = aws_metrics_dao::dbName;
     
-    public function __construct($moreColls = false) {
+    public function __construct($moreColls = false, $doit = false) {
 	parent::__construct(self::dbName, __FILE__);
 	$tsa = ['l' => 'loadavg'];
 	if ($moreColls) $tsa = array_merge($tsa, $moreColls);
 	$this->creTabs(self::dbName, $tsa);
-	$this->doit();
+	if ($doit) $this->doit();
     }
     
     private function doit() {
@@ -22,4 +22,4 @@ class dao_lav extends dao_generic_2 {
     }
 }
 
-if (didCLICallMe(__FILE__)) new dao_lav();
+if (didCLICallMe(__FILE__)) new dao_lav(false, true);

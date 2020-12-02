@@ -6,7 +6,7 @@ function isTest($type = false) {
   
     if (isAWS()) return false;
     
-    if (time() < strtotime('2020-09-24 02:08' ))  return true;
+    if (time() < strtotime('2020-12-01 21:31' ))  return true;
     
     return 0;
     

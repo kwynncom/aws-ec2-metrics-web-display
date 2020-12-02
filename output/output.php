@@ -13,9 +13,6 @@ function setCPUMax($rsin) {
     $d       = $rsin[0]['iid'];
     $max = aws_cpu::getMaxCPUCreditFromInstanceID($d);
     define('MAX_AWS_CPU', $max);
-    
-    
-  
 }
 
 function awsMOutput($dao, $pci) {
@@ -80,7 +77,7 @@ function getHTFromRes($rows, $amf = false, $dao = false, $isAjax) { // $amf - "a
 	$nets = sprintf('%0.2f', $net);
 	
 	$ht .= '<tr>';
-	$cpus = cpuos($cpu);
+	$cpus = awsmoc::cpuos($cpu);
 	$ht .= "<td>$cpus</td>";
 	if ($amf || 1) $ht .= awsmoc::getLavTD($r);
 	$ht .= "<td class='tar'>$nets</td><td>$edates</td><td class='bdates'>$bdates</td>";
@@ -104,12 +101,6 @@ function getHTFromRes($rows, $amf = false, $dao = false, $isAjax) { // $amf - "a
     }
     
     return $ht;
-}
-
-function cpuos($c) {
-    if (abs($c - MAX_AWS_CPU) < 0.005) return intval($c);
-    else return sprintf('%3.2f', $c);
-    
 }
 
 function getDUJS($only = false) {
@@ -155,7 +146,7 @@ function topOutput($cpu, $net, $dao, $asof) {
     
     $ht .= "<tr><td id='kwdu' class=''>$dsu</td><td>du <span id='kwduasof'></span></td></tr>\n";
 
-    $ht .= "<tr><td class=''>$jsu</td><td>/var/log/journal</td></tr>\n";
+    $ht .= "<tr><td class=''>$jsu</td><td>/var/log/journal<a style='padding-left: 2ex' href='./lav/'>la only</a></td></tr>\n";
     $ht .= '<tr><td class="">' . ubuupOut() . '</td><td>ubuup ' . getRedoBtn() . '</td></tr>' . "\n";
    
     
