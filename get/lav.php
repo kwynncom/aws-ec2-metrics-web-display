@@ -7,9 +7,10 @@ class dao_lav extends dao_generic_2 {
     
     const dbName = aws_metrics_dao::dbName;
     
-    public function __construct() {
+    public function __construct($moreColls = false) {
 	parent::__construct(self::dbName, __FILE__);
 	$tsa = ['l' => 'loadavg'];
+	if ($moreColls) $tsa = array_merge($tsa, $moreColls);
 	$this->creTabs(self::dbName, $tsa);
 	$this->doit();
     }
