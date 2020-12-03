@@ -45,6 +45,7 @@ class dao_lav_display extends dao_lav {
 	$r = $this->all[$i];
 	extract($r); unset($r);
 	if (!isset($cpu)) $cpu = '';
+	$lava = $lav; // original array
 	$lavd = awsmoc::getLavNonRedundant($lav); $lav = $lavd; unset($lavd);
 	$df = 'h:ia m/d';
 	$end = date($df, $end_exec_ts); unset($df);
@@ -54,8 +55,16 @@ class dao_lav_display extends dao_lav {
 	if ($maxcpu && $cpu) $cpu = awsmoc::cpuos($cpu, $maxcpu);
 	if ($maxcpu && is_numeric($lav) && $cpu && is_numeric($cpu) && abs($cpu - $maxcpu) < 0.002) return true;
 	if (!$cpu && is_numeric($lav) && abs($lav) < 0.002) return true;
-		
-	return get_defined_vars();
+
+	$vars = get_defined_vars();
+
+	if ($maxcpu && is_numeric($lav) && $cpu && is_numeric($cpu) && abs($cpu - $maxcpu) >= 0.002) return $vars;
+
+	if (isset($lava[0]) && $lava[0] > 0.192) return $vars;
+	if (isset($lava[1]) && $lava[1] > 0.082) return $vars;	
+	if (isset($lava[2]) && $lava[2] > 0.042) return $vars;
+	
+	return true;
 	
     }
     
