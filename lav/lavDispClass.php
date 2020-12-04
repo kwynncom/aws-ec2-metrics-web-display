@@ -9,17 +9,17 @@ class dao_lav_display extends dao_lav {
     const sinceDays = 10;
     const sinceS    = self::sinceDays * 86400;
     const maxIntervalDays = 0.022222; /* 0.02222 = 32 minutes */
+    const sinceAlwaysS = 3630;
     
     public function __construct() {
+	$this->now = time();
 	$tsa = ['m' => 'metrics'];
 	parent::__construct($tsa);
 	$this->p10();
     }
     
     private function p10() {
-	static $now = false;
-	if (!$now) $now = time();
-	$gte = ['$gte' => $now - self::sinceS];
+	$gte = ['$gte' => $this->now - self::sinceS];
 	$q = ['cpu' => ['$exists' => true], 'end_exec_ts' => $gte, 'interval_days' => ['$lte' => self::maxIntervalDays], 'lav' => ['$exists' => true]];
 	$o['sort'] = ['end_exec_ts' => -1, 'interval_days' => 1];
 	$o['projection'] = ['cpu' => 1, 'lav' => 1, 'end_exec_ts' => 1, '_id' => 0, 'begin_iso' => 1, 'end_iso' => 1, 'interval_days' => 1, 'iid' => 1];
@@ -53,11 +53,14 @@ class dao_lav_display extends dao_lav {
 			
 	if (!$maxcpu && isset($iid)) { $maxcpu = aws_cpu::getMaxCPUCreditFromInstanceID($iid); unset($iid); }
 	if ($maxcpu && $cpu) $cpu = awsmoc::cpuos($cpu, $maxcpu);
-	if ($maxcpu && is_numeric($lav) && $cpu && is_numeric($cpu) && abs($cpu - $maxcpu) < 0.002) return true;
-	if (!$cpu && is_numeric($lav) && abs($lav) < 0.002) return true;
 
 	$vars = get_defined_vars();
-
+	
+	if ($this->now - $end_exec_ts <= self::sinceAlwaysS) return $vars;
+	
+	if ($maxcpu && is_numeric($lav) && $cpu && is_numeric($cpu) && abs($cpu - $maxcpu) < 0.002) return true;
+	if (!$cpu && is_numeric($lav) && abs($lav) < 0.002) return true;
+	
 	if ($maxcpu && is_numeric($lav) && $cpu && is_numeric($cpu) && abs($cpu - $maxcpu) >= 0.002) return $vars;
 
 	if (isset($lava[0]) && $lava[0] > 0.192) return $vars;
