@@ -11,14 +11,14 @@ class dao_lav extends dao_generic_2 {
 	parent::__construct(self::dbName, __FILE__);
 	$tsa = ['l' => 'loadavg'];
 	if ($moreColls) $tsa = array_merge($tsa, $moreColls);
-	$this->creTabs(self::dbName, $tsa);
+	$this->creTabs($tsa);
 	if ($doit) $this->doit();
     }
     
     private function doit() {
 	$dat = $this->lcoll->getSeq2(true);
 	$dat['lav'] =  sys_getloadavg();
-	$this->lcoll->insertOne($dat);
+	$res = $this->lcoll->insertOne($dat);
     }
 }
 
