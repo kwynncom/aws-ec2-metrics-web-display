@@ -6,7 +6,7 @@ require_once(__DIR__ . '/../get/get.php');
 
 class dao_lav_display extends dao_lav {
     
-    const sinceDays = 10;
+    const sinceDays = 25;
     const sinceS    = self::sinceDays * 86400;
     const maxIntervalDays = 0.022222; /* 0.02222 = 32 minutes */
     const sinceAlwaysS = 3630;
@@ -18,8 +18,13 @@ class dao_lav_display extends dao_lav {
 	$this->p10();
     }
     
+    private static function getSinceS() {
+	if (1 || isAWS()) return self::sinceS;
+	return 86400 * 80;
+    }
+    
     private function p10() {
-	$gte = ['$gte' => $this->now - self::sinceS];
+	$gte = ['$gte' => $this->now - self::getSinceS()];
 	$q = ['cpu' => ['$exists' => true], 'end_exec_ts' => $gte, 'interval_days' => ['$lte' => self::maxIntervalDays], 'lav' => ['$exists' => true]];
 	$o['sort'] = ['end_exec_ts' => -1, 'interval_days' => 1];
 	$o['projection'] = ['cpu' => 1, 'lav' => 1, 'end_exec_ts' => 1, '_id' => 0, 'begin_iso' => 1, 'end_iso' => 1, 'interval_days' => 1, 'iid' => 1];
@@ -61,11 +66,11 @@ class dao_lav_display extends dao_lav {
 	if ($maxcpu && is_numeric($lav) && $cpu && is_numeric($cpu) && abs($cpu - $maxcpu) < 0.002) return true;
 	if (!$cpu && is_numeric($lav) && abs($lav) < 0.002) return true;
 	
-	if ($maxcpu && is_numeric($lav) && $cpu && is_numeric($cpu) && abs($cpu - $maxcpu) >= 0.002) return $vars;
+	if ($maxcpu && /* is_numeric($lav) && */ $cpu && is_numeric($cpu) && abs($cpu - $maxcpu) >= 0.082) return $vars;
 
-	if (isset($lava[0]) && $lava[0] > 0.192) return $vars;
-	if (isset($lava[1]) && $lava[1] > 0.082) return $vars;	
-	if (isset($lava[2]) && $lava[2] > 0.042) return $vars;
+	if (isset($lava[0]) && $lava[0] > 0.752) return $vars;
+	if (isset($lava[1]) && $lava[1] > 0.182) return $vars;	
+	if (isset($lava[2]) && $lava[2] > 0.082) return $vars;
 	
 	return true;
 	

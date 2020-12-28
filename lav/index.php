@@ -24,10 +24,12 @@
     require_once('lavDispClass.php');
     $o = new dao_lav_display();
     $ht = '';
+    $dispn = 0;
     while ($r = $o->getOutFr()) {
 	if ($r === true) continue;
 	extract($r);
-	if ($i > 200) break;
+	if (++$dispn > 40) break;
+	// if ($i > 200) break;
 	$ht .= '<tr>';
 	$ht .= '<td class="cpu">';
 	$ht .= $cpu;
