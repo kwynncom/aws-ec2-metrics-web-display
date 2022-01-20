@@ -4,6 +4,43 @@ Get and display via web Amazon Web Services EC2 metrics (cpu, network bytes out)
 Running at https://kwynn.com/t/9/10/cpu/
 
 See detailed readmes in the doc folder, although as of 2020/07, those are older.  More recent updates below:
+********
+2022/01/19
+
+I removed reference to the "creds" database.  I created a simple JSON file with an iid for instance ID.
+sudo apt install awscli
+create a config and credentials file as described here:
+https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html
+The config file won't easily work for the web / the www-data user, so I had to create a file with a very 
+specific format for the info
+The given user needs 2 permissions:
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": "ec2:DescribeInstances",
+            "Resource": "*"
+        }
+    ]
+}
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "cloudwatch:GetMetricStatistics"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+
 
 ******
 11:58pm
@@ -146,4 +183,4 @@ So I have a new idea on how to get it to work.  Hopefully it will come soon.
 Put another way, the process control stuff is a mess right now.
 
 I also dealt with some issues around my upgrade of kwynn.com from Ubuntu 18.04 to 20.04.  I also moved it from t2.nano to t3a.nano.  One surprise was that my previous 
-version of isAWS() doesn't work anymore.  
+version of is[]AWS() doesn't work anymore.  

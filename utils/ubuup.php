@@ -6,7 +6,7 @@ function getUbuupCli() {
     
     $p = __DIR__;
     $p .= '/../../';
-    if (isAWS()) $p .= '../../20/05/';
+    $p .= '../../20/05/';
     $p .= 'ubuup/get.php';
     
     require_once($p);

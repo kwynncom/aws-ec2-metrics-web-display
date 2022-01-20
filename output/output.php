@@ -48,7 +48,7 @@ function awsMOutput($dao, $pci) {
     doTemplate($fht, $rht, $tht, $pci);
 }
 
-function getHTFromRes($rows, $amf = false, $dao = false, $isAjax) { // $amf - "am I (is $rows) already filtered?"
+function getHTFromRes($rows, $amf = false, $dao = false, $isAjax = false) { // $amf - "am I (is $rows) already filtered?"
     $ht = '';
     
     if (!$isAjax) $ht .= "<thead><tr><th class='cpu'>cpu</th><th class='lav'>load avg</th><th>net</th><th>end</th><th>beg</th></tr></thead>\n";

@@ -25,7 +25,7 @@ class aws_cpu {
     const minpts =  1530413163; // a check on time calculations - min possible timestamp - June 30, 2018 10:46:03 PM GMT-04:00
 
 // Kwynn 2020/07/05 experimenting with making this method public - may or may not
-private static function doCmds1($daysin = 0, $dao = false, $recursiveCall = false, $cmds) { // called from below; $days of data to get
+private static function doCmds1($daysin = 0, $dao = false, $recursiveCall = false, $cmds = '') { // called from below; $days of data to get
     
     static $ts = false;
     

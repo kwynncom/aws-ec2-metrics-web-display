@@ -19,8 +19,7 @@ class dao_lav_display extends dao_lav {
     }
     
     private static function getSinceS() {
-	if (1 || isAWS()) return self::sinceS;
-	return 86400 * 80;
+		return self::sinceS;
     }
     
     private function p10() {

@@ -5,18 +5,25 @@ require_once('dao.php');
 require_once('getawsacctid.php');
 require_once(__DIR__ . '/' . 'getCreds.php');
 
-function getConfig($dao = false) {
-    
-    if (!$dao) $dao = new aws_metrics_dao();
-    $c = getAWSCreds(); extract($c);
-    kwas($c && is_array($c), 'cannot find AWS creds');
-    
-    $r = preg_match_all('/([^\s]+)\s+=\s+([^\s]+)/', $c['creds'], $m); kwas(isset($m[2][1]), 'creds preg fail CPUBal');
+function putAWSCLICreds() {
+	$c = file_get_contents('/var/kwynn/awscli_credentials.txt');
+	$r = preg_match_all('/([^\s]+)\s+=\s+([^\s]+)/', $c, $m); kwas(isset($m[2][1]), 'creds preg fail CPUBal');
     for($i=0; $i <= 1; $i++) {
 	$s = trim(strtoupper($m[1][$i]) . '=' . $m[2][$i]); kwas(strlen($s) > 20, 'bad uname / pass strlen CPUBal');
 	putenv($s);
     }
-  
+	
+}
+
+function getConfig($dao = false) {
+	    
+    if (!$dao) $dao = new aws_metrics_dao();
+	
+	putAWSCLICreds();
+	
+	$cf = '/var/kwynn/awscpuInfo.json';
+	if (is_readable($cf)) $c = json_decode(file_get_contents($cf), 1);
+ 
     $c['acctid'] = awsAcctId::get($c['iid'], $dao);
     
     $retf = ['reg', 'iid', 'acctid'];
