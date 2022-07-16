@@ -2,7 +2,10 @@
 Get and display via web Amazon Web Services EC2 metrics (cpu, network bytes out)
 
 Running at https://kwynn.com/t/9/10/cpu/
-
+****
+2022/07/16 note: looks like upon a new instance type, you have to update get.php and awsConfig.php AND 
+aws_cpu.instances and set a field max_possible_cpu to the max credits (144 for t3a.nano and 288 for t3a.micro)
+****
 See detailed readmes in the doc folder, although as of 2020/07, those are older.  More recent updates below:
 ********
 2022/01/19

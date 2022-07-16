@@ -110,7 +110,10 @@ private static function doCmds1($daysin = 0, $dao = false, $recursiveCall = fals
 }
 
 public static function getMaxCPUCreditFromInstanceType($tin) {
-    switch($tin) { case 't3a.nano' : return KWYNN_AWS_EC2_t3a_nano_MAX_CPU;    }
+    switch($tin) { 
+		case 't3a.nano'  : return KWYNN_AWS_EC2_t3a_nano_MAX_CPU;    
+		case 't3a.micro' : return KWYNN_AWS_EC2_t3a_micro_MAX_CPU;
+	}
     kwas(0, "cannot find instance type: $tin");
 }
 
