@@ -13,7 +13,7 @@ class aws_metrics_filtered_out extends aws_metrics_dao {
     
     private function __construct($since) {
 	parent::__construct(self::dbName);
-	$this->a10 = false;
+	$this->a10 = []; // Kwynn 2022/07
 	$this->get10($since);
 	$this->f10();
     }
