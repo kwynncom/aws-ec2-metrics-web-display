@@ -4,33 +4,31 @@ require_once('/opt/kwynn/kwutils.php');
 
 class imdsv2Cl extends dao_generic_4 {
 
-    const testUntil = '2024-04-01 01:00';
-    const dropUntil = '2024-04-01 01:00';
+    const testUntil = '2024-04-01 02:20';
+    const dropUntil = '2024-04-01 02:20';
 
     const urlb = 'http://169.254.169.254/latest';
+    const urlgetT = '/api/token';
+
     const urlget = '';
     const timeoutS = 21600;
-    const timeoutTestS = 120;
+    const timeoutTestS = 40;
     const timeoutMarginS = 20;
     const deleteAtS = 0;
     const minTLen = 20; // actual is roughly 56, including padding-type non-space chars
     const maxTLen = 150;
     const dbname = 'imdsv2';
     const collnm = 'tokens';
-   
     
+    public readonly string $ores;
     public readonly string $url;
-    public readonly bool   $istest;
+    public readonly int $now;
+    public readonly int $expires_at;
+
     private readonly string $vtoken;
-    private readonly int $now;
     private readonly object $tcoll;
         
 
-    private function do20() {
-	$t = kwifs($this, 'vtoken');
-	if (!$t) return;
-	$this->do30();
-    }
 
 
     private function dbi10() {
@@ -44,30 +42,28 @@ class imdsv2Cl extends dao_generic_4 {
     private function do30() {
 	$d = [];
 	$d['token'] = $this->vtoken;
-	$d['expires_at'] = $this->now + $this->getTO() - self::timeoutMarginS;
+	$d['expires_at'] = $this->expires_at;
 	$d['expires_at_r'] = date('r', $d['expires_at']);
 	$this->tcoll->insertOne($d);
     }
 
-    private function __construct(string $url, bool $istest = false) {
+    private function __construct(string $url) {
 
 	$this->url = $url;
-	$this->istest = $istest;
 	$this->now = time();
 	$this->dbi10();
 	$this->do10();
-	$this->do20();
+	$this->get10();
     }
 
     private function getTO() : int {
 	$test = false;
 	if ($this->now < strtotime(self::testUntil)) $test = true;
-	if ($this->istest) $test = true;
 
 	return $test ? self::timeoutTestS : self::timeoutS;
     }
 
-    private function oec(string $s) {
+    public static function oec(string $s) {
 	if (!iscli()) return;
 	echo($s . "\n");
     }
@@ -82,7 +78,7 @@ class imdsv2Cl extends dao_generic_4 {
     }
 
     private function haveToken() : bool {
-	$q = ['expires_at' => ['$gt' => $this->now - self::timeoutMarginS]];
+	$q = ['expires_at' => ['$gt' => $this->now + self::timeoutMarginS]];
 	$s = ['sort' => ['expires_at' => -1]];
 
 	$res = $this->tcoll->findOne($q, $s);
@@ -95,32 +91,53 @@ class imdsv2Cl extends dao_generic_4 {
 	return false;
     }
 
+    private function get10() {
+	$url = self::urlb . $this->url;
+	$this->oec($this->url);
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, ['X-aws-ec2-metadata-token: ' . $this->vtoken]);
+	$this->ores = curl_exec($ch);
+	$this->oec($this->ores);
+	
+    }
+
+
+
     private function do10() {
 	if ($this->haveToken()) {
 	    $this->oec('from db: ' . $this->vtoken);
 	    return;
 	}
-	$url = self::urlb . $this->url;
+	$url = self::urlb . self::urlgetT;
 	$this->oec($url);
 	$ch = curl_init($url);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
 	$timeout = $this->getTO();
 	$this->oec('timeout = ' . $timeout);
+	$this->expires_at = $timeout + $this->now;
 	curl_setopt($ch, CURLOPT_HTTPHEADER, ['X-aws-ec2-metadata-token-ttl-seconds: ' . $timeout]);
 	$this->oec('calling cURL for token');
 	$token = trim(curl_exec($ch));
 	$this->oec($token);
 	$this->setVT($token);
 	$this->oec($this->vtoken);
+	$this->do30();
 
 	unset($timeout);
 
 
     }
 
+    public static function get(string $url) : string {
+	$o = new self($url);
+	return kwifs($o, 'ores', ['kwiff' => '']);
+    }
+
     public static function test() {
-	$o = new self('/api/token', false);
+	self::oec(self::get('/meta-data/instance-id'));
+	self::oec(self::get('/meta-data/instance-type'));
     }
 
 }
