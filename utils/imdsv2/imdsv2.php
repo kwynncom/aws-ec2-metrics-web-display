@@ -4,10 +4,11 @@ require_once('/opt/kwynn/kwutils.php');
 
 class imdsv2Cl extends dao_generic_4 {
 
-    const testUntil = '2024-04-01 02:00';
-    const dropUntil = '2024-04-01 00:59';
+    const testUntil = '2024-04-01 01:00';
+    const dropUntil = '2024-04-01 01:00';
 
-    const urlb = 'http://169.254.169.254/latest'; 
+    const urlb = 'http://169.254.169.254/latest';
+    const urlget = '';
     const timeoutS = 21600;
     const timeoutTestS = 120;
     const timeoutMarginS = 20;
@@ -28,8 +29,6 @@ class imdsv2Cl extends dao_generic_4 {
     private function do20() {
 	$t = kwifs($this, 'vtoken');
 	if (!$t) return;
-
-	$c = $this->tcoll;
 	$this->do30();
     }
 
@@ -38,7 +37,7 @@ class imdsv2Cl extends dao_generic_4 {
 	parent::__construct(self::dbname);
 	$c = $this->kwsel(self::collnm);
 	if ($this->now < strtotime(self::dropUntil)) $c->drop();
-	$c->deleteMany(['expires_at' => ['$lte' => $this->now + self::deleteAtS]]);
+	$c->deleteMany(['expires_at' => ['$lte' => $this->now - self::deleteAtS]]);
 	$this->tcoll = $c;
     }
 
@@ -65,7 +64,7 @@ class imdsv2Cl extends dao_generic_4 {
 	if ($this->now < strtotime(self::testUntil)) $test = true;
 	if ($this->istest) $test = true;
 
-	return $test ? self::timeoutTestS : self::testoutS;
+	return $test ? self::timeoutTestS : self::timeoutS;
     }
 
     private function oec(string $s) {
@@ -82,8 +81,25 @@ class imdsv2Cl extends dao_generic_4 {
 	
     }
 
+    private function haveToken() : bool {
+	$q = ['expires_at' => ['$gt' => $this->now - self::timeoutMarginS]];
+	$s = ['sort' => ['expires_at' => -1]];
+
+	$res = $this->tcoll->findOne($q, $s);
+	$t = kwifs($res, 'token');
+	if ($t) { 
+	     $this->vtoken = $t;
+	     return true;
+	}
+
+	return false;
+    }
+
     private function do10() {
-	// if ($this->haveToken()) return;
+	if ($this->haveToken()) {
+	    $this->oec('from db: ' . $this->vtoken);
+	    return;
+	}
 	$url = self::urlb . $this->url;
 	$this->oec($url);
 	$ch = curl_init($url);
@@ -92,7 +108,7 @@ class imdsv2Cl extends dao_generic_4 {
 	$timeout = $this->getTO();
 	$this->oec('timeout = ' . $timeout);
 	curl_setopt($ch, CURLOPT_HTTPHEADER, ['X-aws-ec2-metadata-token-ttl-seconds: ' . $timeout]);
-
+	$this->oec('calling cURL for token');
 	$token = trim(curl_exec($ch));
 	$this->oec($token);
 	$this->setVT($token);
@@ -104,7 +120,7 @@ class imdsv2Cl extends dao_generic_4 {
     }
 
     public static function test() {
-	$o = new self('/api/token', true);
+	$o = new self('/api/token', false);
     }
 
 }
