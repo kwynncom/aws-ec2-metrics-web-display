@@ -6,6 +6,9 @@ require_once(__DIR__ . '/../get/get.php');
 
 class aws_cpu_pcontrol {
 
+    private $testMode;
+    private $dao;
+
 public function __construct($dao = false, $tm = false) { 
     if (!$dao) $dao = new aws_metrics_dao();
     $this->testMode = isTest('exe');

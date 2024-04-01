@@ -4,6 +4,10 @@ require_once('/opt/kwynn/kwutils.php');
 require_once(__DIR__ . '/../utils/dao.php');
 
 class aws_metrics_filtered_out extends aws_metrics_dao {
+
+    private $a10;
+    private $thein;
+
     public static function get($since) {
 	$o = new self($since);
 	return $o->geta10();

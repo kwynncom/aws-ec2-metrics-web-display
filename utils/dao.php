@@ -7,6 +7,11 @@ class aws_metrics_dao extends dao_generic {
     const dbName = 'aws_cpu';
     const aggF   = 0.0026352; // 30.5 * 86400 / 1000000000; bytes per second to GB per month
     const defaultDays = 31;
+
+    private $mcoll;
+    private $ocoll;
+    private $icoll;
+
     
     public function __construct() {
 	parent::__construct(self::dbName);
