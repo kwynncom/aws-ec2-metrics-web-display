@@ -4,6 +4,7 @@ require_once('/opt/kwynn/kwutils.php');
 require_once('dao.php');
 require_once('getawsacctid.php');
 require_once(__DIR__ . '/' . 'getCreds.php');
+require_once(__DIR__ . '/imdsv2/imdsv2.php');
 
 function putAWSCLICreds() {
 	$c = file_get_contents('/var/kwynn/awscli_credentials.txt');
@@ -50,11 +51,11 @@ function getHostInfo() {
 
 function getInstanceInfo($dao) {
     
-    // curl http://169.254.169.254/latest/meta-data/instance-type   results in t3a.nano
+    // curl http://1 6 9 . 2 5 4 . 1 6 9 . 2 5 4/latest/meta-data/instance-type   results in t3a.nano
     
     if (getHostInfo() === 'AWS-EC2') {
-	$iid = trim(shell_exec(            '/usr/bin/wget -q -O - http://169.254.169.254/latest/meta-data/instance-id'));
-	$reg = rmSubRegion(trim(shell_exec('/usr/bin/wget -q -O - http://169.254.169.254/latest/meta-data/placement/availability-zone')));
+	$iid =		   trim(imdsv2Cl::get('/meta-data/instance-id'));
+	$reg = rmSubRegion(trim(imdsv2Cl::get('/meta-data/placement/availability-zone')));
 	$acctid = awsAcctId::get($iid, $dao);
 	return ['iid' => $iid, 'reg' => $reg, 'acctid' => $acctid];
     } else {

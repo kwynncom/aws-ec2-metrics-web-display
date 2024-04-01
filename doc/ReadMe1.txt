@@ -84,7 +84,7 @@ I need to look into whether you need the database entry above on ec2 and fix it 
 
 After I wrote this, I found that the following gets the EC2 metadata more easily.  I should integrate this:
 
-$ /usr/bin/wget -q -O - http://169.254.169.254/latest/dynamic/instance-identity/document
+$ /usr/bin/wget -q -O - http:// 1 6 9. 2 5 4.1 6 9 . 2 54/latest/dynamic/instance-identity/document
 
 I should probably write some notes on installing MongoDB with MongoDB's ppa and such.
 

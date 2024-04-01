@@ -2,6 +2,7 @@
 
 require_once('/opt/kwynn/kwutils.php');
 require_once('awsConfig.php');
+require_once(__DIR__ . '/imdsv2/imdsv2.php');
 
 // awsInstanceType::get(0,0,1);
 
@@ -19,7 +20,7 @@ private static function getITypeInsideAWS($iin, $direct) {
 
     if (!isAWS()) return;
     
-    $it = file_get_contents('http://169.254.169.254/latest/meta-data/instance-type'); 
+    $it = imdsv2Cl::get('/meta-data/instance-type'); 
     if (!$direct) return $it;
     if (!$iin && !isset($_REQUEST['iid'])) self::simpleInstTyAndExit($it);
     
@@ -28,7 +29,7 @@ private static function getITypeInsideAWS($iin, $direct) {
     
     kwas(preg_match('/^i-[0-9a-f]{8,17}$/', $inid), 'bad incoming iid format');
     
-    $aiid = file_get_contents('http://169.254.169.254/latest/meta-data/instance-id');
+    $aiid = imdsv2Cl::get('/meta-data/instance-id');
     if ($aiid !== $inid) self::simpleInstTyAndExit($it); unset($inid);
     
     $iid = $aiid; unset($aiid);

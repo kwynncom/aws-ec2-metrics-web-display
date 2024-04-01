@@ -105,8 +105,10 @@ contents of a non-AWS machine are
     "reg" : "us-east-1"
 }
 
+Note 2024/04: https://aws.amazon.com/blogs/security/defense-in-depth-open-firewalls-reverse-proxies-ssrf-vulnerabilities-ec2-instance-metadata-service/
+
 No creds are needed in the aws_cpu database.  No creds are needed anywhere on an AWS system because the instance can "figure out" its instance ID and 
-region through the 169.254... queries.
+region through the IMDS queries.
 
 My AWS EC2 instance (kwynn.com) is getting its permission through the "IAM role" that it runs under.  The "IAM role" and my separately created user 
 for my local machine both need this policy, or something very similar:

@@ -2,6 +2,7 @@
 
 require_once('/opt/kwynn/kwutils.php');
 require_once('machineInfo.php');
+require_once(__DIR__ . '/imdsv2/imdsv2.php');
 
 
 awsAcctId::test();
@@ -55,7 +56,7 @@ class awsAcctId {
     private static function get169() {
     try {
 
-    $json = shell_exec('/usr/bin/wget -q -O - http://169.254.169.254/latest/meta-data/iam/info');
+    $json = imdsv2Cl::get('/meta-data/iam/info'); // shell_exec('/usr/bin/wget -q -O - http://169.254.169.254/latest/meta-data/iam/info');
     $arr = json_decode($json, 1);
 
     kwas(isset($arr['Code']) &&

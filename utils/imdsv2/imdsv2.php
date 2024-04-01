@@ -19,7 +19,10 @@ class imdsv2Cl extends dao_generic_4 {
     const maxTLen = 150;
     const dbname = 'imdsv2';
     const collnm = 'tokens';
+    const logfb = '/tmp/imdsv2log';
+
     
+    public readonly string $ologfn;
     public readonly string $ores;
     public readonly string $url;
     public readonly int $now;
@@ -63,9 +66,19 @@ class imdsv2Cl extends dao_generic_4 {
 	return $test ? self::timeoutTestS : self::timeoutS;
     }
 
-    public static function oec(string $s) {
-	if (!iscli()) return;
-	echo($s . "\n");
+    public function oec(string $sin) {
+
+	if (!isset($this->ologfn)) $this->ologfn = self::logfb . '_' . (iscli() ? 'cli' : 'www') . '.txt';
+
+	$sout = $sin . "\n"; unset($sin);
+	if (iscli()) echo($sout);
+	$r = date('r');
+	$sout = $r . ': ' . $sout;
+
+	file_put_contents($this->ologfn, '', FILE_APPEND);
+	$cres = chmod($this->ologfn, 0600);
+	if ($cres) file_put_contents($this->ologfn, $sout, FILE_APPEND);
+	
     }
 
     private function setVT($tin) {
@@ -136,8 +149,10 @@ class imdsv2Cl extends dao_generic_4 {
     }
 
     public static function test() {
-	self::oec(self::get('/meta-data/instance-id'));
-	self::oec(self::get('/meta-data/instance-type'));
+	$o = new self('/meta-data/instance-id'); // abitrary to get access to oec
+
+	$o->oec(self::get('/meta-data/instance-id'));
+	$o->oec(self::get('/meta-data/instance-type'));
     }
 
 }
