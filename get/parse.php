@@ -10,7 +10,7 @@ function parseAWSMetric($a, $metric, $stat, $type) { // $a array; $type is cpu o
     
     $a = $a['Datapoints'];
 
-    $count = count($a); kwas($count, 'parse fail count CPUBal');
+    $count = count($a); /* kwas($count, 'parse fail count CPUBal'); */
     
     $sl = $stat; // statistic label, such as Minimum or Sum
     

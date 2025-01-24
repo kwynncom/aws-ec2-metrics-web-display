@@ -125,7 +125,11 @@ public static function getMaxCPUCreditFromInstanceID($iin) {
     
     $dao = new aws_metrics_dao();    
     $dbr = $dao->getI($iin, 'max_possible_cpu');
-    kwas($dbr && is_numeric($dbr) && $dbr > 0.9, 'invalid max cpu');
+    try { 
+	kwas($dbr && is_numeric($dbr) && $dbr > 0.9, 'invalid max cpu');
+    } catch (Exception $ex) {
+	$dbr = -1;
+    }
     $cache[$iin] = $dbr;
     return $dbr;
 }
@@ -198,15 +202,18 @@ public static function cliGet($beg = false, $end = false, $per = aws_cpu::minPer
     $cbeg = microtime(1);
     $rawres = shell_exec($cmd);
     $cend = microtime(1); unset($cmd);
-    $json = trim($rawres); unset($rawres);
+    
+    if ($rawres) $json = trim($rawres); unset($rawres);
     
     if ($rarr !== false) {
+	if (!isset($json)) return '';
 	$arr  = json_decode($json, 1);  unset($json);
 	$parr  = parseAWSMetric($arr, $metric, $stat, $ctype); unset($arr);
 	$rarr  = array_merge($rarr, $parr); unset($parr);
 	$rarr[$ctype . '_exec_s'] = $cend - $cbeg; unset($cend, $cbeg);
 	return $rarr;
-    } else return $json;
+    } else if (isset($json)) return $json;
+	else return '';
     
 }
 

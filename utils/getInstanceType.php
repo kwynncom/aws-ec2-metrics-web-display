@@ -88,8 +88,10 @@ private static function getITypeOutsideAWS($iin = false, $regid = false) {
     
     if ($iin) $iid = $iin;
     else      $iid = $argv[1];
+
+    $cmd = "/usr/local/bin/aws ec2 describe-instances --region $regid --instance-ids $iid";
     
-    $res = shell_exec("aws ec2 describe-instances --region $regid --instance-ids $iid");
+    $res = shell_exec("/usr/local/bin/aws ec2 describe-instances --region $regid --instance-ids $iid");
     $a   = json_decode($res, 1);
     
     $itype = $a['Reservations'][0]['Instances'][0]['InstanceType'];

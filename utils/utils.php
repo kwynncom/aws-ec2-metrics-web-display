@@ -88,7 +88,9 @@ function getCAWSAvg($n, $s) { // GB per month with 0.001 precision
 }
 
 function getTheCmd($reg, $iid, $begin, $end, $per, $metric, $stat) {
-    $cmd  = "/usr/bin/aws cloudwatch get-metric-statistics --metric-name $metric --namespace AWS/EC2 ";
+
+    // can be /usr/bin or /usr/local/bin 
+    $cmd  = "/usr/local/bin/aws cloudwatch get-metric-statistics --metric-name $metric --namespace AWS/EC2 ";
     $cmd .= "--statistics $stat ";
     $cmd .= "--dimensions Name=InstanceId,Value=$iid --region $reg ";
     $cmd .= " --start-time $begin --end-time $end ";
