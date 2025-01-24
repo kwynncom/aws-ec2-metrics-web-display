@@ -11,7 +11,9 @@ function putAWSCLICreds() {
 	// kwas(false, ''); // #@(#(@(@
 	$c = file_get_contents('/var/kwynn/awscli_credentials.txt');
 	$r = preg_match_all('/([^\s]+)\s+=\s+([^\s]+)/', $c, $m); kwas(isset($m[2][0]), 'creds preg fail CPUBal');
+
     for($i=0; $i <= 1; $i++) {
+
 	$s = trim(strtoupper($m[1][$i]) . '=' . $m[2][$i]); kwas(strlen($s) > 20, 'bad uname / pass strlen CPUBal');
 	putenv($s);
     }
@@ -31,7 +33,9 @@ function getConfig($dao = false) {
 	if (is_readable($cf)) $c = json_decode(file_get_contents($cf), 1);
 
 	if (!isset($c)) return [];
+
 	if ($c) return $c;
+
  
     $c['acctid'] = awsAcctId::get($c['iid'], $dao);
     
