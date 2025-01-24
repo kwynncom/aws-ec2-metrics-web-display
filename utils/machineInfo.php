@@ -7,11 +7,15 @@ require_once(__DIR__ . '/' . 'getCreds.php');
 require_once(__DIR__ . '/imdsv2/imdsv2.php');
 
 function putAWSCLICreds() {
+    try {
 	$c = file_get_contents('/var/kwynn/awscli_credentials.txt');
 	$r = preg_match_all('/([^\s]+)\s+=\s+([^\s]+)/', $c, $m); kwas(isset($m[2][1]), 'creds preg fail CPUBal');
     for($i=0; $i <= 1; $i++) {
 	$s = trim(strtoupper($m[1][$i]) . '=' . $m[2][$i]); kwas(strlen($s) > 20, 'bad uname / pass strlen CPUBal');
 	putenv($s);
+    }
+    } catch(Exception $ex) {
+	// looks like I don't care in 2025.  I've changed this quite a bit.
     }
 	
 }
